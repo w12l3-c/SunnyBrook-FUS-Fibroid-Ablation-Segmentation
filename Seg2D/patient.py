@@ -1,0 +1,253 @@
+import os
+import re
+
+# ---------------------- Main Roots ---------------------- #
+# Main Root for Masks
+mask_root = "/mnt/HDD_1TB/Wallace/Segmentation_Raw_2D/"
+# Sub-Directories of Main
+subdir1 = sorted(os.listdir(mask_root))
+
+# Siemens dataset with mask only for bones (spine, hips)
+bones = subdir1[0]
+# List of all patient paths in this directory
+listbones = sorted(os.listdir(mask_root + bones))
+listbones = [os.path.join(mask_root + bones, i) for i in listbones]
+
+# Siemens dataset with mask for every class
+siemens = subdir1[1]
+# List of all patient paths in this directory
+listsiemens = sorted(os.listdir(mask_root + siemens))
+listsiemens= [os.path.join(mask_root + siemens, i) for i in listsiemens]
+
+# Siemens dataset with low resolution mri
+lowres = subdir1[2]
+# List of all patient paths in this directory
+listlowres = sorted(os.listdir(mask_root + lowres))
+listlowres = [os.path.join(mask_root + lowres, i) for i in listlowres]
+
+# GE Arrayus dataset with mask for every class
+arrayus = subdir1[3]
+# List of all patient paths in this directory
+listarrayus = sorted(os.listdir(mask_root + arrayus))
+listarrayus = [os.path.join(mask_root + arrayus, i) for i in listarrayus]
+
+
+# ---------------------- Addition ---------------------- #
+# If this is actually used as part of clinical practice
+# they should manualy tune the brightness and contrast on the dicom and save it 
+
+
+# ---------------------- Patient Class ---------------------- #
+class Patient:
+    def __init__(self, path) -> None:
+        # Patient root path
+        self.path = path    
+        self.dir = sorted(os.listdir(path))
+        
+        # Patient number
+        self.name = (path.split('/')[-1]).split('-')[0]
+        
+        # Mask and Dicom(Img) directory
+        self.mask_dir = os.path.join(path, self.dir[0])
+        self.dicom_dir = os.path.join(path, self.dir[1])
+        
+        self.mask_listdir = sorted(os.listdir(self.mask_dir))   # ['Bowel', 'Catheter', 'Muscle', 'Skin', 'Spine', 'hip_L', 'hip_R']
+        self.dicom_listdir = sorted(os.listdir(self.dicom_dir))
+        
+        # Dicom(Img) directory for coronal and sagittal
+        self.coronal = os.path.join(self.dicom_dir, self.dicom_listdir[0])
+        self.sagittal = os.path.join(self.dicom_dir, self.dicom_listdir[1])
+        
+        self.coronal_listdir = sorted(os.listdir(self.coronal))
+        self.sagittal_listdir = sorted(os.listdir(self.sagittal))
+        
+        # Colour palette for multi-class segmentation
+        self.colour_label = {'Spine': (35, 132, 250), 'Bowel': (14, 240, 56), 'Muscle': (214, 51, 36), 'Skin': (240, 170, 31), 'hip_L': (173, 20, 250), 'hip_R': (131, 20, 250)}
+        
+        # Sagittal and coronal spacing
+        self.sagittal_spacing = [0.9375, 0.9375]
+        
+        # LPS coordinates
+        sagittal_slices = len(self.sagittal_listdir)
+        coronal_slices = len(self.coronal_listdir)
+        self.LPS = [sagittal_slices, coronal_slices, coronal_slices]
+        
+    def spine_seg(self):
+        # Spine masks directory
+        self.spine_dir = os.path.join(self.mask_dir, 'Spine')
+        self.spine_listdir = sorted(os.listdir(self.spine_dir))
+        
+        # Start and end index of spine masks
+        start = int(re.findall(r'\d+', self.spine_listdir[0])[0])
+        end = int(re.findall(r'\d+', self.spine_listdir[-1])[0])
+        
+        # Spine masks and corresponding images' paths in lists
+        self.spine_mask = [os.path.join(self.spine_dir, x) for x in self.spine_listdir]
+        self.spine_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir[start-1:end]]
+        
+    def bowel_seg(self):
+        # Bowel masks directory
+        self.bowel_dir = os.path.join(self.mask_dir, 'Bowel')
+        self.bowel_listdir = sorted(os.listdir(self.bowel_dir))
+        
+        # Start and end index of bowel masks
+        start = int(re.findall(r'\d+', self.bowel_listdir[0])[0])
+        end = int(re.findall(r'\d+', self.bowel_listdir[-1])[0])
+        
+        # Bowel masks and corresponding images' paths in lists
+        self.bowel_mask = [os.path.join(self.bowel_dir, x) for x in self.bowel_listdir]
+        self.bowel_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir[start-1:end]]
+        
+    def hipl_seg(self):
+        # Left Hip masks directory
+        self.hipl_dir = os.path.join(self.mask_dir, 'hip_L')
+        self.hipl_listdir = sorted(os.listdir(self.hipl_dir))
+        
+        # Start and end index of hipl masks
+        start = int(re.findall(r'\d+', self.hipl_listdir[0])[0])
+        end = int(re.findall(r'\d+', self.hipl_listdir[-1])[0])
+        
+        # Left Hip masks and corresponding images' paths in lists
+        self.hipl_mask = [os.path.join(self.hipl_dir, x) for x in self.hipl_listdir]
+        self.hipl_img = [os.path.join(self.coronal, x) for x in self.coronal_listdir[start-1:end]]
+        
+    def hipr_seg(self):
+        # Right Hip masks directory
+        self.hipr_dir = os.path.join(self.mask_dir, 'hip_R')
+        self.hipr_listdir = sorted(os.listdir(self.hipr_dir))
+        
+        # Start and end index of hipr masks
+        start = int(re.findall(r'\d+', self.hipr_listdir[0])[0])
+        end = int(re.findall(r'\d+', self.hipr_listdir[-1])[0])
+        
+        # Right Hip masks and corresponding images' paths in lists
+        self.hipr_mask = [os.path.join(self.hipr_dir, x) for x in self.hipr_listdir]
+        self.hipr_img = [os.path.join(self.coronal, x) for x in self.coronal_listdir[start-1:end]]
+        
+    def skin_seg(self):
+        # Skin Fat masks directory
+        self.skin_dir = os.path.join(self.mask_dir, 'Skin')
+        self.skin_listdir = sorted(os.listdir(self.skin_dir))
+        
+        # Start and end index of skin masks
+        start = int(re.findall(r'\d+', self.skin_listdir[0])[0])
+        end = int(re.findall(r'\d+', self.skin_listdir[-1])[0])
+        
+        # Skin Fat masks and corresponding images' paths in lists
+        self.skin_mask = [os.path.join(self.skin_dir, x) for x in self.skin_listdir]
+        self.skin_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir[start-1:end]]
+        
+    def muscle_seg(self):
+        # Muscle masks directory
+        self.muscle_dir = os.path.join(self.mask_dir, 'Muscle')
+        self.muscle_listdir = sorted(os.listdir(self.muscle_dir))
+        
+        # Start and end index of muscle masks
+        start = int(re.findall(r'\d+', self.spine_listdir[0])[0])
+        end = int(re.findall(r'\d+', self.spine_listdir[-1])[0])
+        
+        # Muscle masks and corresponding images' paths in lists
+        self.muscle_mask = [os.path.join(self.muscle_dir, x) for x in self.muscle_listdir]
+        self.muscle_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir[start-1:end]]
+
+    def prepare(self):
+        # Run all segmentation file paths functions above base on the avaliable folder in patient
+        # ie. Spine masks is available in all patients, but Muscle is not
+        if 'Spine' in self.mask_listdir:
+            self.spine_seg()
+        if 'Bowel' in self.mask_listdir:
+            self.bowel_seg()
+        if 'hip_L' in self.mask_listdir:
+            self.hipl_seg()
+        if 'hip_R' in self.mask_listdir:
+            self.hipr_seg()
+        if 'Skin' in self.mask_listdir:
+            self.skin_seg()
+        if 'Muscle' in self.mask_listdir:
+            self.muscle_seg()
+            
+            
+# ------------------ Create Patient List ------------------ #
+def create_patient_list(path_list=listsiemens):
+    # Full list of patient images
+    patient_list = []
+    
+    # Loop over every patient 
+    for path in path_list:
+        # Instantiate Patient class for every patient and prepare the segmentation paths
+        patient = Patient(path)
+        patient.prepare()
+        
+        # Append each patient to the list
+        patient_list.append(patient)
+    
+    # Return a list of patient class object
+    return patient_list
+    
+    
+# ------------------ Convert Patient List to Torch Dataset Style ------------------ #    
+def get_spine(patient_list):
+    path_list = []
+    for patient in patient_list:
+        if hasattr(patient, 'spine_img'):
+            for index, img in enumerate(patient.spine_img):
+                mask = patient.spine_mask[index]
+                path_list.append({'img':img, 'mask':mask})
+
+    return path_list
+    
+def get_bowel(patient_list):
+    path_list = []
+    for patient in patient_list:
+        if hasattr(patient, 'bowel_img'):
+            for index, img in enumerate(patient.bowel_img):
+                mask = patient.bowel_mask[index]
+                path_list.append({'img':img, 'mask':mask})
+
+    return path_list
+
+def get_hipl(patient_list):
+    path_list = []
+    for patient in patient_list:
+        if hasattr(patient, 'hipl_img'):
+            for index, img in enumerate(patient.hipl_img):
+                mask = patient.hipl_mask[index]
+                path_list.append({'img':img, 'mask':mask})
+    
+    return path_list
+
+def get_hipr(patient_list):
+    path_list = []
+    for patient in patient_list:
+        if hasattr(patient, 'hipr_img'):
+            for index, img in enumerate(patient.hipr_img):
+                mask = patient.hipr_mask[index]
+                path_list.append({'img':img, 'mask':mask})
+    
+    return path_list
+
+def get_muscle(patient_list):
+    path_list = []
+    for patient in patient_list:
+        if hasattr(patient, 'muscle_img'):
+            for index, img in enumerate(patient.muscle_img):
+                mask = patient.muscle_mask[index]
+                path_list.append({'img':img, 'mask':mask})
+        
+    return path_list
+
+def get_skin(patient_list):
+    path_list = []
+    for patient in patient_list:
+        if hasattr(patient, 'skin_img'):
+            for index, img in enumerate(patient.skin_img):
+                mask = patient.skin_mask[index]
+                path_list.append({'img':img, 'mask':mask})
+        
+    return path_list
+
+# ------------------ Test ------------------ #
+if __name__ == '__main__':
+    patient_19_root = os.path.join(mask_root + siemens, listsiemens[0])
+    patient_19 = Patient(patient_19_root)
+
