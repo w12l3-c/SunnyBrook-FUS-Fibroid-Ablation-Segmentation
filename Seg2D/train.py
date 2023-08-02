@@ -115,7 +115,7 @@ def deeplabv3_train_model(model, train_dataloader, val_dataloader, loss_fn, accu
 
 # ---------------------- For UNet Only ---------------------- #
 # ---------------------- Training Step ---------------------- #
-def train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, device):
+def unet_train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device):
     model.train()
     train_loss = 0
     train_acc = 0
@@ -123,34 +123,35 @@ def train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, devic
     for batch, (img, mask) in enumerate(dataloader):
         img = img.to(device)
         mask = mask.to(device)
+        mask = mask.squeeze()
+
+        pos_weight = weight_fn(mask).to(device)
 
         y_logits = model(img)
-        y_pred = torch.sigmoid(y_logits)
-        # y_pred = y_logits.argmax(1).unsqueeze(1)  # Do not do argmax in binary classification
+        y_pred = torch.softmax(y_logits, dim=1).argmax(dim=1).float()
 
         acc = accuracy(y_pred, mask)
-        loss = loss_fn(y_logits, mask)
+        loss = loss_fn(y_logits[:, 1], mask) * pos_weight
 
-        train_acc += acc
-        train_loss += loss
+        train_acc += acc.item()
+        train_loss += loss.item()
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         
-        if batch % 20 == 0:
-            print(f"Batch: {batch}/{len(dataloader)} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f}")
+        if batch % (len(dataloader)//5) == 0 and batch != 0:
+            print(f"Progress: {batch%(len(dataloader)//5)}/{len(dataloader)//5} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f}")
 
     train_loss /= len(dataloader)
     train_acc /= len(dataloader)
-    scheduler.step()
-    # print(f"Dice loss: {train_loss:.4f}| Train acc: {train_acc:.4f}")
+    scheduler.step(train_loss)
 
     return train_loss, train_acc
 
 
 # ---------------------- Validation Step ---------------------- #
-def val_step(model, dataloader, loss_fn, accuracy, device):
+def unet_val_step(model, dataloader, loss_fn, accuracy, weight_fn, device):
     model.eval()
     val_loss = 0
     val_acc = 0
@@ -159,40 +160,41 @@ def val_step(model, dataloader, loss_fn, accuracy, device):
         for batch, (img, mask) in enumerate(dataloader):
             img = img.to(device)
             mask = mask.to(device)
+            mask = mask.squeeze()
+
+            pos_weight = weight_fn(mask).to(device)
 
             y_logits = model(img)
-            y_pred = torch.sigmoid(y_logits)
-            # y_pred = y_logits.argmax(1).unsqueeze(1)  # Do not do argmax in binary classification
+            y_pred = torch.softmax(y_logits, dim=1).argmax(dim=1).float()
 
             acc = accuracy(y_pred, mask)
-            loss = loss_fn(y_logits, mask)
+            loss = loss_fn(y_logits[:, 1], mask) * pos_weight
 
-            val_acc += acc
-            val_loss += loss
+            val_acc += acc.item()
+            val_loss += loss.item()
             
-            if batch % 5 == 0:
-                print(f"Batch: {batch}/{len(dataloader)} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
+            if batch % (len(dataloader)//5) == 0 and batch != 0:
+                print(f"Progress: {batch%(len(dataloader)//5)}/{len(dataloader)//5} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
 
         val_loss /= len(dataloader)
         val_acc /= len(dataloader)
-    # print(f"Dice loss: {val_loss:.4f}| Val acc: {val_acc:.4f}")
 
     return val_loss, val_acc
 
 
 # ---------------------- Training Loop ---------------------- #
-def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy, optimizer, scheduler, device, epochs=10, writer=None):
+def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device, epochs=10, writer=None):
     results = { "train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
     best_acc = 0
     best_model = deepcopy(model.state_dict())
 
     for epoch in tqdm(range(epochs)):
-        train_loss, train_acc = train_step(model, train_dataloader, loss_fn, accuracy, optimizer, scheduler, device)
-        val_loss, val_acc = val_step(model, val_dataloader, loss_fn, accuracy, device)
+        train_loss, train_acc = unet_train_step(model, train_dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device)
+        val_loss, val_acc = unet_val_step(model, val_dataloader, loss_fn, accuracy, weight_fn, device)
 
-        results["train_loss"].append(train_loss.item())
+        results["train_loss"].append(train_loss)
         results["train_acc"].append(train_acc)
-        results["val_loss"].append(val_loss.item())
+        results["val_loss"].append(val_loss)
         results["val_acc"].append(val_acc)
 
         print(f"Epoch: {epoch+1}/{epochs} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
@@ -202,8 +204,8 @@ def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy,
 
         # Tensorboard Tracking
         if writer:
-            writer.add_scalar(tag="Loss/train_loss", scalar_value=train_loss.item(), global_step=epoch)
-            writer.add_scalar(tag="Loss/val_loss", scalar_value=val_loss.item(), global_step=epoch)
+            writer.add_scalar(tag="Loss/train_loss", scalar_value=train_loss, global_step=epoch)
+            writer.add_scalar(tag="Loss/val_loss", scalar_value=val_loss, global_step=epoch)
 
             writer.add_scalar(tag="Accuracy/train_acc", scalar_value=train_acc, global_step=epoch)
             writer.add_scalar(tag="Accuracy/val_acc", scalar_value=val_acc, global_step=epoch)

@@ -1,3 +1,8 @@
+import os
+
+# Set TF_CPP_MIN_LOG_LEVEL to 2 to suppress warning messages
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow.keras.layers as layers
@@ -6,12 +11,18 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
+import keyboard
+import pydicom
+import cv2
+from PIL import Image
+import matplotlib.pyplot as plt
+
 import torchvision
 
 import segmentation_models_pytorch as smp
 from segmentation_models_pytorch.encoders import get_preprocessing_params
 
-# --------------------- Tensorflow UNet --------------------- #
+# --------------------- Tensorflow UNet Classsic --------------------- #
 def conv_block(input, in_Channels):
     conv1 = layers.Conv2D(in_Channels, (3,3), activation='relu', padding='same')(input)
     batch1 = layers.BatchNormalization()(conv1)
@@ -51,7 +62,7 @@ def basic_UNET(input_shape):
     return model
     
 
-# --------------------- Pytorch UNet --------------------- #
+# --------------------- Pytorch UNet Classic --------------------- #
 class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
@@ -128,27 +139,117 @@ class UNet(nn.Module):
         return x
     
     
-# --------------------- Pytorch UNet --------------------- #
-def pretrained_UNET(in_channels, num_classes):
+# --------------------- Pytorch UNet Library --------------------- #
+def auto_UNET(in_channels, num_classes):
     model = smp.Unet(
-        encoder_name="resnet34",       
+        encoder_name="resnet101",       
         encoder_weights="imagenet",    
         in_channels=in_channels,                  
         classes=num_classes,                      
     )
+    
+    # Somehow freezing weights decrease performance
+    # for param in model.encoder.parameters():
+    #     param.requires_grad = False
+
+    # for param in model.decoder.parameters():
+    #     param.requires_grad = False
+        
     return model
 
-def prepare_UNET(model):
-    params = get_preprocessing_params('resnet34', pretrained='imagenet')
+def prepare_transform():
+    params = get_preprocessing_params('resnet101', pretrained='imagenet')
     transform = torchvision.transforms.Compose([
+        torchvision.transforms.RandomHorizontalFlip(0.2),
         torchvision.transforms.ToTensor(),
-        torchvision.transforms.Normalize(**params),
     ])
     
-    loss_fn = smp.losses.DiceLoss('bilinear')
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
-    
-    
     return transform
-   
+
+def prepare_loss(option='BCE'):
+    if option == 'BCE':
+        criterion = nn.BCEWithLogitsLoss()  # pos_weight=torch.tensor([1.0, 5.0])
+    if option == 'CE':
+        criterion = nn.CrossEntropyLoss()
+    if option == 'Dice_Binary':
+        criterion = smp.losses.DiceLoss('binary')
+    if option == 'Dice_Multi':
+        criterion = smp.losses.DiceLoss('multilabel')
+        
+    return criterion
+
+def prepare_optimizer(model, lr=1e-3):
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    return optimizer
+
+def prepare_scheduler(optimizer, factor=0.1, patience=10, min_lr=1e-5, verbose=True):
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=factor, patience=patience, min_lr=min_lr, verbose=verbose)
+    return scheduler
+
+
+# --------------------- Accuracy --------------------- #
+def accuracy_iou(pred, target):
+    pred_mask = pred == 1
+    target_mask = target == 1
+
+    intersection = torch.logical_and(pred_mask, target_mask).sum()
+    union = torch.logical_or(pred_mask, target_mask).sum()
+
+    iou = intersection / union
+    return iou
+
+def accuracy_intersect(pred, target):
+    pred_mask = pred == 1
+    target_mask = target == 1
+
+    # Calculate intersection only for class 1
+    intersection = torch.logical_and(pred_mask, target_mask).sum()
+    return intersection / pred.sum()
+
+
+# --------------------- Class Weights ------------------------ #
+def calculate_weights(mask):
+  total = mask.numel()
+  pos = torch.sum(mask > 0.5)
+  return total/pos
+
+
+# --------------------- Inference --------------------- #
+def predict(model, dataset, device):
+    transform = torchvision.transforms.Compose([
+        torchvision.transforms.ToTensor(),
+        torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229,0.224,0.225])
+    ])
     
+    model.eval()
+    with torch.no_grad():
+        for pair in dataset:
+            image = pair['img']
+            mask = pair['mask']
+            
+            image = image.convert('RGB')
+            resized_image = image.resize((320, 320))
+            transformed_image = transform(resized_image).to(device)
+            logits = model(transformed_image.unsqueeze(0))
+            pred = torch.softmax(logits, dim=1).argmax(dim=1).float()
+            pred = pred.squeeze().cpu().numpy() * 255
+            pred = cv2.resize(pred, (image.size[0], image.size[1]))
+            
+            yield (image, pred)
+            
+def predict_UNET(model, dataset, device):
+    generator = predict(model, dataset, device)
+    for prediction in generator:
+        image, pred = prediction
+        plt.figure(figsize=(10,10))
+        plt.title('Prediction')
+        plt.imshow(image, alpha=0.8)
+        plt.imshow(pred, alpha=0.2, cmap='gray')
+        plt.show()
+        
+        # Should make a stop function here but rn the script doesn't have admin privileges
+        
+        
+        
+        
+            

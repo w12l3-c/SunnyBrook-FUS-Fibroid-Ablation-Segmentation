@@ -4,15 +4,17 @@ import torch.nn.functional as F
 
 import torchvision
 import torchvision.transforms as transforms
+from torchvision.transforms.functional import resize
 
 from patient import *
 
 import cv2
+import numpy as np
 import pydicom
 import datasets
 from PIL import Image
 
-
+# ---------------------- Data Augmentation ---------------------- #
 colour_jitter = transforms.Compose([
     transforms.ColorJitter(brightness=0.5, contrast=0.5),
 ])
@@ -20,6 +22,24 @@ colour_jitter = transforms.Compose([
 normalization = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229 , 0.224, 0.225])
 ])
+
+def random_rotation(image, mask):
+    # Random Rotation Angle
+    angle = np.random.randint(-10, 11)
+
+    # Apply the same rotation angle to both the image and the mask
+    image_rotated = image.rotate(angle)
+    mask_rotated = mask.rotate(angle)
+
+    # Convert the rotated images back to NumPy arrays
+    image_rotated = np.array(image_rotated)
+    mask_rotated = np.array(mask_rotated)
+
+    # Convert np arrays to PIL Image
+    image_rotated_pil = Image.fromarray(image_rotated)
+    mask_rotated_pil = Image.fromarray(mask_rotated)
+
+    return image_rotated_pil, mask_rotated_pil
 
 def convert_to_PIL(pairs):
     for pair in pairs:
@@ -42,6 +62,7 @@ def convert_to_PIL(pairs):
     
     return pairs
 
+# ---------------------- Dataset & DataLoader ---------------------- #
 class PatientDataset2D(torch.utils.data.Dataset):
     def __init__(self, pairs, transform=None):
         self.pairs = pairs
@@ -53,10 +74,14 @@ class PatientDataset2D(torch.utils.data.Dataset):
         mask = img_mask_pair["mask"]
         
         if self.transform:
+            img, mask = random_rotation(img, mask)
+            
             img = colour_jitter(img)
             img = self.transform(img)
             img = normalization(img)
+            
             mask = self.transform(mask)
+            
             return img, mask
         else:
             return img, mask
@@ -64,10 +89,59 @@ class PatientDataset2D(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.pairs)
 
-# Input should be the same, the processsing done in init
-# patient == [{img:, mask:}]
 
-def create_dataloader(patient, transform, batch_size=4, shuffle=False, num_workers=0, pin_memory=False, drop_last=False):
+def create_dataloader(patient, transform, batch_size=4, shuffle=False, num_workers=0, pin_memory=False, drop_last=False, collate_fn=None):
     dataset = PatientDataset2D(patient, transform)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers, pin_memory=pin_memory, drop_last=drop_last)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers, pin_memory=pin_memory, drop_last=drop_last, collate_fn=collate_fn)
     return dataloader
+
+
+# ---------------------- Collate Functions ---------------------- #
+# For same size images but keeping the ratio of the original image
+def same_collate(batch):
+    # Separate images and targets
+    images, targets = zip(*batch)
+
+    # Find the maximum height and width in the batch
+    max_height = 320
+    max_width = 320
+
+    # Resize images and masks to the maximum dimensions
+    resized_images = []
+    resized_targets = []
+    for img, target in zip(images, targets):
+        # print(img.shape[1:], target.shape[1:])
+        if img.shape[1:] != (max_height, max_width):
+            # Square picture just resize
+            if img.shape[1] % img.shape[2] == 0:
+                resized_img = resize(img, size=(max_height, max_width))
+                resized_images.append(resized_img)
+            # Non-square picture pad (for rectangular mri)
+            if img.shape[1:] == (320, 160):
+                padded_img = torch.nn.functional.pad(img, (80, 80, 0, 0), mode='constant', value=0)
+                resized_images.append(padded_img)
+        else:
+            resized_images.append(img)
+
+        if target.shape[1:] != (max_height, max_width):
+            # Square picture just resize
+            if target.shape[1] % target.shape[2] == 0:
+                resized_target = resize(target, size=(max_height, max_width))
+                resized_targets.append(resized_target)
+            # Non-square picture pad (for rectangular mri)
+            if target.shape[1:] == (320, 160):
+                padded_target = torch.nn.functional.pad(target, (80, 80, 0, 0), mode='constant', value=0)
+                resized_targets.append(padded_target)
+        else:
+            resized_targets.append(target)
+
+    # Convert resized images and targets to tensors and stack them
+    images = torch.stack(resized_images)
+    targets = torch.stack(resized_targets)
+
+    return images, targets
+    
+# Collate  function for diffnerent size input images
+def diff_collate(batch):
+    images, targets = zip(*batch)
+    return images, targets

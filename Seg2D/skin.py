@@ -22,12 +22,12 @@ from train import deeplabv3_train_model, unet_train_model
 from models import DeepLabV3, Unet, Unetpp
 
 
-# This will be just segmenting spine (1 class) -> Binary Segmentation Task
+# This will be just segmenting skin (1 class) -> Binary Segmentation Task
 
 # =================== Hyperparameters =================== #
 NUM_WORKERS = os.cpu_count() # Number of CPU cores used for data loading
 PIN_MEMORY = True   # Pin memory for faster GPU transfer
-NUM_EPOCHS = 200 # Just fot test, in pratical should be 100 or more
+NUM_EPOCHS = 300 # Just fot test, in pratical should be 100 or more
 BATCH_SIZE = 8  # Between 8-16 is good
 IN_CHANNELS = 3 # RGB
 NUM_CLASSES = 1 # Classes to Segment
@@ -38,23 +38,23 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 torch.manual_seed(42)
 
 # Define which directories are part of the dataset
-train_path_list = listsiemens[:9] + listbones
-test_path_list = [listsiemens[-1]]  # + listlowres + [listarrayus[0]]
+train_path_list = listsiemens[:9] 
+test_path_list = [listsiemens[-1]]  
 
 # Create a list of patient class objects
 train_patients = create_patient_list(path_list=train_path_list)
 test_patients = create_patient_list(path_list=test_path_list)
 
-# =================== Spine Datasets =================== #
-# Grab Each Patient's Spine image and mask pair
-train_spine_dataset = get_spine(train_patients)
-test_spine_dataset = get_spine(test_patients)
-train_spine_dataset, val_spine_dataset = train_test_split(train_spine_dataset, test_size=0.1, random_state=42)
+# =================== Skin Datasets =================== #
+# Grab Each Patient's skin image and mask pair
+train_skin_dataset = get_skin(train_patients)
+test_skin_dataset = get_skin(test_patients)
+train_skin_dataset, val_skin_dataset = train_test_split(train_skin_dataset, test_size=0.1, random_state=42)
 
 # Convert the pydicom and mask jpg to PIL images
-train_spine_dataset = convert_to_PIL(train_spine_dataset)
-val_spine_dataset = convert_to_PIL(val_spine_dataset)
-test_spine_dataset = convert_to_PIL(test_spine_dataset)
+train_skin_dataset = convert_to_PIL(train_skin_dataset)
+val_skin_dataset = convert_to_PIL(val_skin_dataset)
+test_skin_dataset = convert_to_PIL(test_skin_dataset)
 
 # ------------------- Training ------------------- #
 def deeplabv3_run():
@@ -63,13 +63,13 @@ def deeplabv3_run():
     model = model.to(device)
     
     # Prepare train and test dataloader
-    if len(train_spine_dataset)%BATCH_SIZE == 1 or len(val_spine_dataset)%BATCH_SIZE == 1:
+    if len(train_skin_dataset)%BATCH_SIZE == 1 or len(val_skin_dataset)%BATCH_SIZE == 1:
         # Batch number of 1 will cause error in batchnorm
-        train_dataloader = create_dataloader(train_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True)
-        val_dataloader = create_dataloader(val_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True)
+        train_dataloader = create_dataloader(train_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True)
+        val_dataloader = create_dataloader(val_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True)
     else:
-        train_dataloader = create_dataloader(train_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False)
-        val_dataloader = create_dataloader(val_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False)    
+        train_dataloader = create_dataloader(train_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False)
+        val_dataloader = create_dataloader(val_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False)    
     
     # Prepare tensorboard writer
     writer = SummaryWriter('runs/DeepLabV3')
@@ -84,14 +84,14 @@ def deeplabv3_run():
     print('Training Completed')
     
     # Save the model
-    save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
+    save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
     save_model_torch(best, save_path)
     print(f"Model saved at {save_path}")
 
 
 def deeplabv3_inference():
     # Prepare dataset
-    dataset = test_spine_dataset
+    dataset = test_skin_dataset
     
     # Load model
     model, transform, loss_fn, optimizer, scheduler = DeepLabV3.DeepLabV3(in_channels=3, num_classes=1, size='regular')
@@ -144,13 +144,13 @@ def unet_run():
     scheduler = Unet.prepare_scheduler(optimizer)
     
     # Prepare train and test dataloader
-    if len(train_spine_dataset)%BATCH_SIZE == 1 or len(val_spine_dataset)%BATCH_SIZE == 1:
+    if len(train_skin_dataset)%BATCH_SIZE == 1 or len(val_skin_dataset)%BATCH_SIZE == 1:
         # Batch number of 1 will cause error in batchnorm
-        train_dataloader = create_dataloader(train_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
-        val_dataloader = create_dataloader(val_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
+        train_dataloader = create_dataloader(train_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
+        val_dataloader = create_dataloader(val_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
     else:
-        train_dataloader = create_dataloader(train_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)
-        val_dataloader = create_dataloader(val_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)    
+        train_dataloader = create_dataloader(train_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)
+        val_dataloader = create_dataloader(val_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)    
     
     # Prepare tensorboard writer
     writer = SummaryWriter('runs/Unet')
@@ -165,7 +165,7 @@ def unet_run():
     print('Training Completed')
     
     # Save the model
-    save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
+    save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
     save_model_torch(best, save_path)
     print(f"Model saved at {save_path}")
     
@@ -174,13 +174,13 @@ def unet_inference():
     # Set Seed
     torch.manual_seed(42)
     
-    saved_model = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Spine_2023-08-01_18:02:56.pth"
+    saved_model = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_2023-08-01_18:02:56.pth"
     model = Unet.auto_UNET(in_channels=3, num_classes=2)
     model = load_model_torch(model, saved_model)
     model = model.to(device)
     
     # Run Inference function
-    Unet.predict_UNET(model, test_spine_dataset, device)
+    Unet.predict_UNET(model, test_skin_dataset, device)
     
     
 def unetpp_run(): 
@@ -197,13 +197,13 @@ def unetpp_run():
     scheduler = Unetpp.prepare_scheduler(optimizer)
     
     # Prepare train and test dataloader
-    if len(train_spine_dataset)%BATCH_SIZE == 1 or len(val_spine_dataset)%BATCH_SIZE == 1:
+    if len(train_skin_dataset)%BATCH_SIZE == 1 or len(val_skin_dataset)%BATCH_SIZE == 1:
         # Batch number of 1 will cause error in batchnorm
-        train_dataloader = create_dataloader(train_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
-        val_dataloader = create_dataloader(val_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
+        train_dataloader = create_dataloader(train_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
+        val_dataloader = create_dataloader(val_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
     else:
-        train_dataloader = create_dataloader(train_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)
-        val_dataloader = create_dataloader(val_spine_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)    
+        train_dataloader = create_dataloader(train_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)
+        val_dataloader = create_dataloader(val_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)    
     
     # Prepare tensorboard writer
     writer = SummaryWriter('runs/Unetpp')
@@ -218,7 +218,7 @@ def unetpp_run():
     print('Training Completed')
     
     # Save the model
-    save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unetpp_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+    save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unetpp_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
     save_model_torch(best, save_path)
     print(f"Model saved at {save_path}")
     
@@ -233,7 +233,7 @@ def unetpp_inference():
     model = model.to(device)
     
     # Run Inference function
-    Unetpp.predict_UNET(model, test_spine_dataset, device)
+    Unetpp.predict_UNET(model, test_skin_dataset, device)
     
 
 if __name__ == "__main__":

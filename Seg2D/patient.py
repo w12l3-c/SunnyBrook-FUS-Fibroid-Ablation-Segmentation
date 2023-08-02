@@ -248,6 +248,8 @@ def get_skin(patient_list):
 
 # ------------------ Test ------------------ #
 if __name__ == '__main__':
-    patient_19_root = os.path.join(mask_root + siemens, listsiemens[0])
+    patient_19_root = os.path.join(mask_root + lowres, listlowres[0])
     patient_19 = Patient(patient_19_root)
+    
+    
 
