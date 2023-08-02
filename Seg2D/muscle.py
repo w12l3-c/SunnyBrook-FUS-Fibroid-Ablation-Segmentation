@@ -38,8 +38,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 torch.manual_seed(42)
 
 # Define which directories are part of the dataset
-train_path_list = listsiemens[:9] 
-test_path_list = [listsiemens[-1]]  
+train_path_list = listsiemens[:7] + listsiemens[8:] 
+test_path_list = [listsiemens[7]]  
 
 # Create a list of patient class objects
 train_patients = create_patient_list(path_list=train_path_list)
@@ -241,7 +241,7 @@ if __name__ == "__main__":
     # deeplabv3_run()
     # deeplabv3_inference()
     
-    # unet_run()
+    unet_run()
     # unet_inference()
     
     unetpp_run()

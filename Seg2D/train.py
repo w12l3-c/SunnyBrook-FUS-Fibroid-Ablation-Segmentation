@@ -141,7 +141,7 @@ def unet_train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, 
         optimizer.step()
         
         if batch % (len(dataloader)//5) == 0 and batch != 0:
-            print(f"Progress: {batch%(len(dataloader)//5)}/{len(dataloader)//5} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f}")
+            print(f"Progress: {batch}/{len(dataloader)//5} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f}")
 
     train_loss /= len(dataloader)
     train_acc /= len(dataloader)
@@ -174,7 +174,7 @@ def unet_val_step(model, dataloader, loss_fn, accuracy, weight_fn, device):
             val_loss += loss.item()
             
             if batch % (len(dataloader)//5) == 0 and batch != 0:
-                print(f"Progress: {batch%(len(dataloader)//5)}/{len(dataloader)//5} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
+                print(f"Progress: {batch}/{len(dataloader)//5} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
 
         val_loss /= len(dataloader)
         val_acc /= len(dataloader)

@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 from utils import *
 from dataloader import *
-from Seg2D.save_load import *
+from save_load import *
 from train import deeplabv3_train_model, unet_train_model   
 
 from models import DeepLabV3, Unet, Unetpp
@@ -28,7 +28,7 @@ from models import DeepLabV3, Unet, Unetpp
 NUM_WORKERS = os.cpu_count() # Number of CPU cores used for data loading
 PIN_MEMORY = True   # Pin memory for faster GPU transfer
 NUM_EPOCHS = 200 # Just fot test, in pratical should be 100 or more
-BATCH_SIZE = 8  # Between 8-16 is good
+BATCH_SIZE = 4  # Between 8-16 is good: 4 for Deeplabv3 & Unet++, 8 for Unet
 IN_CHANNELS = 3 # RGB
 NUM_CLASSES = 1 # Classes to Segment
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -38,8 +38,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 torch.manual_seed(42)
 
 # Define which directories are part of the dataset
-train_path_list = listsiemens[:9] + listbones
-test_path_list = [listsiemens[-1]]  # + listlowres + [listarrayus[0]]
+train_path_list = listsiemens[:9] + listbones + listlowres
+test_path_list = [listsiemens[-1]] + [listarrayus[0]]
 
 # Create a list of patient class objects
 train_patients = create_patient_list(path_list=train_path_list)

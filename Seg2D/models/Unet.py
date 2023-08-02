@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-import keyboard
+import uuid
 import pydicom
 import cv2
 from PIL import Image
@@ -192,8 +192,10 @@ def accuracy_iou(pred, target):
     pred_mask = pred == 1
     target_mask = target == 1
 
-    intersection = torch.logical_and(pred_mask, target_mask).sum()
-    union = torch.logical_or(pred_mask, target_mask).sum()
+    intersection = torch.sum(pred_mask == target_mask == True)
+    pred_total = torch.sum(pred_mask == True)
+    target_total = torch.sum(target_mask == True)
+    union = pred_total + target_total - intersection
 
     iou = intersection / union
     return iou
@@ -201,10 +203,14 @@ def accuracy_iou(pred, target):
 def accuracy_intersect(pred, target):
     pred_mask = pred == 1
     target_mask = target == 1
+    intersection = torch.sum(pred_mask == target_mask == True)
+    pred_total = torch.sum(pred_mask == True)
+    
+    return intersection / pred_total
 
-    # Calculate intersection only for class 1
-    intersection = torch.logical_and(pred_mask, target_mask).sum()
-    return intersection / pred.sum()
+def accuracy_basic(pred, target):
+    correct = torch.sum(pred == target)
+    return correct / pred.numel()
 
 
 # --------------------- Class Weights ------------------------ #
@@ -239,7 +245,18 @@ def predict(model, dataset, device):
             
 def predict_UNET(model, dataset, device):
     generator = predict(model, dataset, device)
-    for prediction in generator:
+    save = input('Save predictions? (y/n): ')
+    directory = '/mnt/HDD_1TB/Wallace/Code/Seg2D/predictions/'
+    
+    if save == 'y':
+        try:
+            if os.path.exists(directory):
+                print('Directory exists -- Continue')
+        except Exception as e:
+            os.mkdir(directory)
+            print('Directory created')
+    
+    for i, prediction in enumerate(generator):
         image, pred = prediction
         plt.figure(figsize=(10,10))
         plt.title('Prediction')
@@ -247,6 +264,15 @@ def predict_UNET(model, dataset, device):
         plt.imshow(pred, alpha=0.2, cmap='gray')
         plt.show()
         
+        if save == 'y':
+            filename = f"mask_{i}.jpg"
+            cv2.imwrite(os.path.join(directory, filename), pred)
+        
+        if i % 10 == 0:
+            quit = input('Exit? (y/n): ')
+            if quit == 'y':
+                break
+
         # Should make a stop function here but rn the script doesn't have admin privileges
         
         

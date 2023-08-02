@@ -58,8 +58,10 @@ def accuracy_iou(pred, target):
     pred_mask = pred == 1
     target_mask = target == 1
 
-    intersection = torch.logical_and(pred_mask, target_mask).sum()
-    union = torch.logical_or(pred_mask, target_mask).sum()
+    intersection = torch.sum(pred_mask == target_mask == True)
+    pred_total = torch.sum(pred_mask == True)
+    target_total = torch.sum(target_mask == True)
+    union = pred_total + target_total - intersection
 
     iou = intersection / union
     return iou
@@ -67,10 +69,14 @@ def accuracy_iou(pred, target):
 def accuracy_intersect(pred, target):
     pred_mask = pred == 1
     target_mask = target == 1
+    intersection = torch.sum(pred_mask == target_mask == True)
+    pred_total = torch.sum(pred_mask == True)
+    
+    return intersection / pred_total
 
-    # Calculate intersection only for class 1
-    intersection = torch.logical_and(pred_mask, target_mask).sum()
-    return intersection / pred.sum()
+def accuracy_basic(pred, target):
+    correct = torch.sum(pred == target)
+    return correct / pred.numel()
 
 
 # --------------------- Class Weights ------------------------ #
