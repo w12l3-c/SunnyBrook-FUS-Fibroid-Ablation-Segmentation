@@ -41,7 +41,7 @@ def random_rotation(image, mask):
 
     return image_rotated_pil, mask_rotated_pil
 
-def convert_to_PIL(pairs):
+def convert_to_PIL(pairs, img_size=(320, 320)):
     for pair in pairs:
         img = pair["img"]
         mask = pair["mask"]
@@ -50,11 +50,11 @@ def convert_to_PIL(pairs):
         img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         img = Image.fromarray(img)
-        img = img.resize((320, 320))
+        img = img.resize(img_size)
         img = img.convert("RGB")
         
         mask = Image.open(mask)
-        mask = mask.resize((320, 320))
+        mask = mask.resize(img_size)
         mask = mask.convert("L")
         
         pair['img'] = img

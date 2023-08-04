@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 from utils import *
 from dataloader import *
-from Seg2D.save_load import *
+from save_load import *
 from train import deeplabv3_train_model, unet_train_model   
 
 from models import DeepLabV3, Unet, Unetpp
@@ -153,7 +153,7 @@ def unet_run():
         val_dataloader = create_dataloader(val_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)    
     
     # Prepare tensorboard writer
-    writer = SummaryWriter('runs/Unet')
+    writer = SummaryWriter('runs/Unetskin')
     
     # Start time
     start_time = time.time()
@@ -174,7 +174,7 @@ def unet_inference():
     # Set Seed
     torch.manual_seed(42)
     
-    saved_model = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_2023-08-01_18:02:56.pth"
+    saved_model = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_2023-08-03_14:03:42.pth"
     model = Unet.auto_UNET(in_channels=3, num_classes=2)
     model = load_model_torch(model, saved_model)
     model = model.to(device)
@@ -199,14 +199,14 @@ def unetpp_run():
     # Prepare train and test dataloader
     if len(train_skin_dataset)%BATCH_SIZE == 1 or len(val_skin_dataset)%BATCH_SIZE == 1:
         # Batch number of 1 will cause error in batchnorm
-        train_dataloader = create_dataloader(train_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
-        val_dataloader = create_dataloader(val_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
+        train_dataloader = create_dataloader(train_skin_dataset, transform, batch_size=4, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
+        val_dataloader = create_dataloader(val_skin_dataset, transform, batch_size=4, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=True, collate_fn=None)
     else:
-        train_dataloader = create_dataloader(train_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)
-        val_dataloader = create_dataloader(val_skin_dataset, transform, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)    
+        train_dataloader = create_dataloader(train_skin_dataset, transform, batch_size=4, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)
+        val_dataloader = create_dataloader(val_skin_dataset, transform, batch_size=4, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, drop_last=False, collate_fn=None)    
     
     # Prepare tensorboard writer
-    writer = SummaryWriter('runs/Unetpp')
+    writer = SummaryWriter('runs/UnetppSkin')
     
     # Start time
     start_time = time.time()
@@ -227,23 +227,23 @@ def unetpp_inference():
     # Set Seed
     torch.manual_seed(42)
     
-    saved_model = ""
+    saved_model = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unetpp_Skin_2023-08-03_22.pth"
     model = Unetpp.auto_UNETPP(in_channels=3, num_classes=2)
     model = load_model_torch(model, saved_model)
     model = model.to(device)
     
     # Run Inference function
-    Unetpp.predict_UNET(model, test_skin_dataset, device)
+    Unetpp.predict_UNETPP(model, train_skin_dataset[:10], device)
     
 
 if __name__ == "__main__":
     # deeplabv3_run()
     # deeplabv3_inference()
     
-    unet_run()
-    # unet_inference()
+    # unet_run()
+    unet_inference()
     
-    unetpp_run()
+    # unetpp_run()
     # unetpp_inference()
     
     

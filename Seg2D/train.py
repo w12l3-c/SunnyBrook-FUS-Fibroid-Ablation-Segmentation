@@ -23,7 +23,7 @@ def deeplabv3_train_step(model, dataloader, loss_fn, accuracy, optimizer, schedu
 
         y_logits = model(img)['out']
         y_pred = torch.sigmoid(y_logits)
-        # y_pred = y_logits.argmax(1).unsqueeze(1)  # Do not do argmax in binary classification
+        # y_pred = y_logits.argmax(1).unsqueeze(1)  # Do not do argmax with 1 channel
 
         acc = accuracy(y_pred, mask)
         loss = loss_fn(y_logits, mask)
@@ -35,7 +35,7 @@ def deeplabv3_train_step(model, dataloader, loss_fn, accuracy, optimizer, schedu
         loss.backward()
         optimizer.step()
         
-        if batch % 20 == 0:
+        if batch % int(len(dataloader)*0.2) == 0 and batch != 0:
             print(f"Batch: {batch}/{len(dataloader)} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f}")
 
     train_loss /= len(dataloader)
@@ -59,7 +59,7 @@ def deeplabv3_val_step(model, dataloader, loss_fn, accuracy, device):
 
             y_logits = model(img)['out']
             y_pred = torch.sigmoid(y_logits)
-            # y_pred = y_logits.argmax(1).unsqueeze(1)  # Do not do argmax in binary classification
+            # y_pred = y_logits.argmax(1).unsqueeze(1) 
 
             acc = accuracy(y_pred, mask)
             loss = loss_fn(y_logits, mask)
@@ -67,7 +67,7 @@ def deeplabv3_val_step(model, dataloader, loss_fn, accuracy, device):
             val_acc += acc
             val_loss += loss
             
-            if batch % 5 == 0:
+            if batch % int(len(dataloader)*0.2) == 0 and batch != 0:
                 print(f"Batch: {batch}/{len(dataloader)} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
 
         val_loss /= len(dataloader)
@@ -140,8 +140,8 @@ def unet_train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, 
         loss.backward()
         optimizer.step()
         
-        if batch % (len(dataloader)//5) == 0 and batch != 0:
-            print(f"Progress: {batch}/{len(dataloader)//5} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f}")
+        if batch % int(len(dataloader)*0.2) == 0 and batch != 0:
+            print(f"Progress: {batch}/{len(dataloader)} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f}")
 
     train_loss /= len(dataloader)
     train_acc /= len(dataloader)
@@ -173,8 +173,8 @@ def unet_val_step(model, dataloader, loss_fn, accuracy, weight_fn, device):
             val_acc += acc.item()
             val_loss += loss.item()
             
-            if batch % (len(dataloader)//5) == 0 and batch != 0:
-                print(f"Progress: {batch}/{len(dataloader)//5} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
+            if batch % 4 == 0 and batch != 0:
+                print(f"Progress: {batch}/{len(dataloader)} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
 
         val_loss /= len(dataloader)
         val_acc /= len(dataloader)

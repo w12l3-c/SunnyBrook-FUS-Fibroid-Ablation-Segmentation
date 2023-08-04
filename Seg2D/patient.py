@@ -31,11 +31,10 @@ arrayus = subdir1[3]
 listarrayus = sorted(os.listdir(mask_root + arrayus))
 listarrayus = [os.path.join(mask_root + arrayus, i) for i in listarrayus]
 
-
-# ---------------------- Addition ---------------------- #
-# If this is actually used as part of clinical practice
-# they should manualy tune the brightness and contrast on the dicom and save it 
-
+# Image Size of the dicom images for each class
+siemens_size = (320, 320)
+bones_size = (160, 320)
+arrayus_size = (256, 256)
 
 # ---------------------- Patient Class ---------------------- #
 class Patient:
@@ -143,8 +142,8 @@ class Patient:
         self.muscle_listdir = sorted(os.listdir(self.muscle_dir))
         
         # Start and end index of muscle masks
-        start = int(re.findall(r'\d+', self.spine_listdir[0])[0])
-        end = int(re.findall(r'\d+', self.spine_listdir[-1])[0])
+        start = int(re.findall(r'\d+', self.muscle_listdir[0])[0])
+        end = int(re.findall(r'\d+', self.muscle_listdir[-1])[0])
         
         # Muscle masks and corresponding images' paths in lists
         self.muscle_mask = [os.path.join(self.muscle_dir, x) for x in self.muscle_listdir]
@@ -233,7 +232,6 @@ def get_muscle(patient_list):
             for index, img in enumerate(patient.muscle_img):
                 mask = patient.muscle_mask[index]
                 path_list.append({'img':img, 'mask':mask})
-        
     return path_list
 
 def get_skin(patient_list):

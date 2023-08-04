@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 from utils import *
 from dataloader import *
-from Seg2D.save_load import *
+from save_load import *
 from train import deeplabv3_train_model, unet_train_model   
 
 from models import DeepLabV3, Unet, Unetpp

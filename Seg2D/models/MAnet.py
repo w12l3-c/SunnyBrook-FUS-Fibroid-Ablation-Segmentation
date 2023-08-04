@@ -4,6 +4,8 @@ import torch.nn.functional as F
 
 import torchvision
 
+import os 
+import time
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -103,19 +105,67 @@ def predict(model, dataset, device):
             image = image.convert('RGB')
             resized_image = image.resize((320, 320))
             transformed_image = transform(resized_image).to(device)
+            
+            start_time = time.time()
             logits = model(transformed_image.unsqueeze(0))
             pred = torch.softmax(logits, dim=1).argmax(dim=1).float()
+            end_time = time.time()
+            
+            totensor = torchvision.transforms.ToTensor()
+            acc = accuracy_iou(pred, totensor(mask.convert('L').resize((320, 320))).to(device))
+            
             pred = pred.squeeze().cpu().numpy() * 255
-            pred = cv2.resize(pred, (image.size[0], image.size[1]))
+            pred = cv2.resize(pred, (320, 320))
             
-            yield (image, pred)
+            mask = mask.resize((320, 320))
             
-def predict_UNET(model, dataset, device):
+            inference_time = end_time - start_time
+            
+            yield (image, mask, pred, acc, inference_time)
+            
+def predict_MANET(model, dataset, device):
     generator = predict(model, dataset, device)
-    for prediction in generator:
-        image, pred = prediction
-        plt.figure(figsize=(10,10))
-        plt.title('Prediction')
-        plt.imshow(image, alpha=0.8)
-        plt.imshow(pred, alpha=0.2, cmap='gray')
+    save = input('Save predictions? (y/n): ')
+    directory = '/mnt/HDD_1TB/Wallace/Code/Seg2D/predictions/'
+    
+    if save == 'y':
+        try:
+            if os.path.exists(directory):
+                print('Directory exists -- Continue')
+        except Exception as e:
+            os.mkdir(directory)
+            print('Directory created')
+    
+    for i, prediction in enumerate(generator):
+        image, mask, pred, acc, time = prediction
+        
+        fig, ax = plt.subplots(1,4, figsize=(20,15))
+        ax[0].imshow(image)
+        ax[1].imshow(mask, cmap='gray')
+        ax[2].imshow(pred, cmap='gray')
+        ax[3].imshow(image, alpha=0.7)
+        ax[3].imshow(pred, alpha=0.3, cmap='gray')
+        
+        ax[0].set_title('Image')
+        ax[1].set_title('Ground Truth')
+        ax[2].set_title(f'Prediction: {acc:.2f}')
+        ax[3].set_title('Overlay')
+        
+        ax[0].axis('off')
+        ax[1].axis('off')
+        ax[2].axis('off')
+        ax[3].axis('off')
+        
+        fig.suptitle(f'Inference Time: {time:.4f} seconds')
         plt.show()
+        
+        if save == 'y':
+            filename = f"mask_{i}.jpg"
+            cv2.imwrite(os.path.join(directory, filename), pred)
+        
+        if i % 10 == 0:
+            quit = input('Exit? (y/n): ')
+            if quit == 'y':
+                break
+        
+    print('Inference Complete')
