@@ -185,7 +185,7 @@ def unet_val_step(model, dataloader, loss_fn, accuracy, weight_fn, device):
 # ---------------------- Training Loop ---------------------- #
 def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device, epochs=10, writer=None):
     results = { "train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
-    best_acc = 0
+    best_loss = 0
     best_model = deepcopy(model.state_dict())
 
     for epoch in tqdm(range(epochs)):
@@ -199,7 +199,7 @@ def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy,
 
         print(f"Epoch: {epoch+1}/{epochs} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
 
-        if train_acc > best_acc:
+        if best_loss > train_loss:
             best_model = deepcopy(model.state_dict())
 
         # Tensorboard Tracking

@@ -14,8 +14,9 @@ from torch.utils.data import DataLoader
 import uuid
 import time
 import pydicom
+import numpy as np
 import cv2
-from PIL import Image
+from PIL import Image, ImageEnhance
 import matplotlib.pyplot as plt
 
 import torchvision
@@ -158,10 +159,10 @@ def auto_UNET(in_channels, num_classes):
         
     return model
 
-def prepare_transform():
+def prepare_transform(flip=0.3):
     params = get_preprocessing_params('resnet101', pretrained='imagenet')
     transform = torchvision.transforms.Compose([
-        torchvision.transforms.RandomHorizontalFlip(0.2),
+        torchvision.transforms.RandomHorizontalFlip(flip),
         torchvision.transforms.ToTensor(),
     ])
     
@@ -183,7 +184,7 @@ def prepare_optimizer(model, lr=1e-3):
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     return optimizer
 
-def prepare_scheduler(optimizer, factor=0.1, patience=10, min_lr=1e-5, verbose=True):
+def prepare_scheduler(optimizer, factor=0.1, patience=10, min_lr=1e-6, verbose=True):
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=factor, patience=patience, min_lr=min_lr, verbose=verbose)
     return scheduler
 
@@ -220,6 +221,16 @@ def calculate_weights(mask):
   pos = torch.sum(mask > 0.5)
   return total/pos
 
+# --------------------- Gamma Correction --------------------- #
+def gamma_correction_cv2(image, gamma=1.0):
+    inv_gamma = 1.0 / gamma
+    table = np.array([((i / 255.0) ** inv_gamma) * 255 for i in np.arange(0, 256)])
+    return cv2.LUT(image, table.astype(np.uint8))
+
+def gamma_correction_pil(image, gamma=1.0):
+    enhancer = ImageEnhance.Brightness(image)
+    gamma_corrected_image = enhancer.enhance(gamma)
+    return gamma_corrected_image
 
 # --------------------- Inference --------------------- #
 def predict(model, dataset, device, img_size):
@@ -244,7 +255,8 @@ def predict(model, dataset, device, img_size):
             end_time = time.time()
             
             totensor = torchvision.transforms.ToTensor()
-            acc = accuracy_iou(pred, totensor(mask.convert('L').resize((320, 320))).to(device))
+            acc_iou = accuracy_iou(pred, totensor(mask.convert('L').resize(img_size)).to(device))
+            acc_basic = accuracy_basic(pred, totensor(mask.convert('L').resize(img_size)).to(device))
             
             pred = pred.squeeze().cpu().numpy() * 255
             pred = cv2.resize(pred, img_size)
@@ -253,7 +265,7 @@ def predict(model, dataset, device, img_size):
             
             inference_time = end_time - start_time
             
-            yield (image, mask, pred, acc, inference_time)
+            yield (image, mask, pred, acc_iou, acc_basic, inference_time)
             
 def predict_UNET(model, dataset, device, img_size=(320, 320)):
     generator = predict(model, dataset, device, img_size)
@@ -269,9 +281,11 @@ def predict_UNET(model, dataset, device, img_size=(320, 320)):
 
     
     for i, prediction in enumerate(generator):
-        image, mask, pred, acc, time = prediction
+        image, mask, pred, acc_iou, acc_basic, time = prediction
+        image = gamma_correction_pil(image, gamma=1.5)  
         
         fig, ax = plt.subplots(1,4, figsize=(20,15))
+        
         ax[0].imshow(image)
         ax[1].imshow(mask, cmap='gray')
         ax[2].imshow(pred, cmap='gray')
@@ -280,7 +294,7 @@ def predict_UNET(model, dataset, device, img_size=(320, 320)):
         
         ax[0].set_title('Image')
         ax[1].set_title('Ground Truth')
-        ax[2].set_title(f'Prediction: {acc:.2f}')
+        ax[2].set_title(f'Prediction: {acc_iou*100:.2f}(IOU) | {acc_basic*100:.2f}(Acc)')
         ax[3].set_title('Overlay')
         
         ax[0].axis('off')
@@ -303,4 +317,3 @@ def predict_UNET(model, dataset, device, img_size=(320, 320)):
         
     print('Inference Complete')
         
-            

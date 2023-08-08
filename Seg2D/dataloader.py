@@ -46,6 +46,10 @@ def convert_to_PIL(pairs, img_size=(320, 320)):
         img = pair["img"]
         mask = pair["mask"]
         
+        # cv2 image is (height, width, channels)
+        # PIL image is (width, height) + mode
+        # Tensor is (channels, height, width)
+        
         img = pydicom.dcmread(img).pixel_array
         img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)

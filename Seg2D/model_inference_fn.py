@@ -19,7 +19,7 @@ from dataloader import *
 from save_load import *
 from train import deeplabv3_train_model, unet_train_model   
 
-from models import DeepLabV3, Unet, Unetpp
+from models import DeepLabV3, Unet, Unetpp, DeepLabV3plus, FPN, MAnet
 
 
 def deeplabv3_inference(test_dataset, model_path, device):
@@ -63,7 +63,7 @@ def deeplabv3_inference(test_dataset, model_path, device):
     plt.imshow(r, alpha=0.5)
     
     
-def unet_inference(test_dataset, model_path, device):
+def unet_inference(test_dataset, model_path, device, img_size=(320, 320)):
     # Set Seed
     torch.manual_seed(42)
     
@@ -72,10 +72,10 @@ def unet_inference(test_dataset, model_path, device):
     model = model.to(device)
     
     # Run Inference function
-    Unet.predict_UNET(model, test_dataset, device)
+    Unet.predict_UNET(model, test_dataset, device, img_size)
     
     
-def unetpp_inference(test_dataset, model_path, device):
+def unetpp_inference(test_dataset, model_path, device, img_size=(320, 320)):
     # Set Seed
     torch.manual_seed(42)
     
@@ -84,4 +84,27 @@ def unetpp_inference(test_dataset, model_path, device):
     model = model.to(device)
     
     # Run Inference function
-    Unetpp.predict_UNET(model, test_dataset, device)
+    Unetpp.predict_UNETPP(model, test_dataset, device, img_size)
+    
+    
+def deeplabv3plus_inference(test_dataset, model_path, device, img_size=(320, 320)):
+    # Set Seed
+    torch.manual_seed(42)
+    
+    model = DeepLabV3plus.auto_DEEPLABV3P(in_channels=3, num_classes=2)
+    model = load_model_torch(model, model_path)
+    model = model.to(device)
+    
+    # Run Inference function
+    DeepLabV3plus.predict_DEEPLABV3P(model, test_dataset, device, img_size)
+    
+def fpn_inference(test_dataset, model_path, device, img_size=(320, 320)):
+    # Set Seed
+    torch.manual_seed(42)
+    
+    model = FPN.auto_FPN(in_channels=3, num_classes=2)
+    model = load_model_torch(model, model_path)
+    model = model.to(device)
+    
+    # Run Inference function
+    FPN.predict_FPN(model, test_dataset, device, img_size)

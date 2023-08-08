@@ -53,7 +53,7 @@ def deeplabv3_run(train_dataset, val_dataset, device, epochs, batch_size, num_wo
     print(f"Model saved at {save_path}")
     
     
-def unet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE'): 
+def unet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
     # Set Seed
     torch.manual_seed(42)
     
@@ -61,7 +61,8 @@ def unet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers
     model = Unet.auto_UNET(in_channels=3, num_classes=2)
     model = model.to(device)
     
-    transform = Unet.prepare_transform()
+    flip = 0.3 if axis == 'Sagittal' else 0.0
+    transform = Unet.prepare_transform(flip)
     loss_fn = Unet.prepare_loss(loss)
     optimizer = Unet.prepare_optimizer(model)
     scheduler = Unet.prepare_scheduler(optimizer)

@@ -18,7 +18,7 @@ from segmentation_models_pytorch.encoders import get_preprocessing_params
 # --------------------- Pytorch UNet++ --------------------- #
 def auto_UNETPP(in_channels, num_classes):
     model = smp.UnetPlusPlus(
-        encoder_name="resnet101",       
+        encoder_name="resnet50",       
         encoder_weights="imagenet",    
         in_channels=in_channels,                  
         classes=num_classes,                      
@@ -89,7 +89,7 @@ def calculate_weights(mask):
 
 
 # --------------------- Inference --------------------- #
-def predict(model, dataset, device):
+def predict(model, dataset, device, img_size):
     transform = torchvision.transforms.Compose([
         torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229,0.224,0.225])
@@ -102,7 +102,7 @@ def predict(model, dataset, device):
             mask = pair['mask']
             
             image = image.convert('RGB')
-            resized_image = image.resize((320, 320))
+            resized_image = image.resize(img_size)
             transformed_image = transform(resized_image).to(device)
             
             start_time = time.time()
@@ -111,20 +111,20 @@ def predict(model, dataset, device):
             end_time = time.time()
             
             totensor = torchvision.transforms.ToTensor()
-            acc = accuracy_iou(pred, totensor(mask.convert('L').resize((320, 320))).to(device))
+            acc = accuracy_iou(pred, totensor(mask.convert('L').resize(img_size)).to(device))
             
             pred = pred.squeeze().cpu().numpy() * 255
-            pred = cv2.resize(pred, (320, 320))
+            pred = cv2.resize(pred, img_size)
             
-            mask = mask.resize((320, 320))
+            mask = mask.resize(img_size)
             
             inference_time = end_time - start_time
             
             yield (image, mask, pred, acc, inference_time)
             
             
-def predict_UNETPP(model, dataset, device):
-    generator = predict(model, dataset, device)
+def predict_UNETPP(model, dataset, device, img_size=(320, 320)):
+    generator = predict(model, dataset, device, img_size)
     save = input('Save predictions? (y/n): ')
     directory = '/mnt/HDD_1TB/Wallace/Code/Seg2D/predictions/'
     

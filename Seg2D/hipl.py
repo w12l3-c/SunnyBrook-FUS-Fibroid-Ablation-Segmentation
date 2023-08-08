@@ -40,8 +40,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 torch.manual_seed(42)
 
 # Define which directories are part of the dataset
-train_path_list = listsiemens[:7] + listsiemens[8:] + listbones[:-1] + listlowres
-test_path_list = [listsiemens[7]] + [listbones[-1]]
+train_path_list = listsiemens[:7] + listsiemens[8:] # + listbones[:-1] + listlowres
+test_path_list = [listsiemens[7]] # + [listbones[-1]]
 
 # Create a list of patient class objects
 train_patients = create_patient_list(path_list=train_path_list)
@@ -59,22 +59,15 @@ val_hipl_dataset = convert_to_PIL(val_hipl_dataset, img_size=(160, 320))
 test_hipl_dataset = convert_to_PIL(test_hipl_dataset, img_size=(160, 320))
 
 if __name__ == "__main__":
-    # deeplabv3_run()
-    # deeplabv3_inference()
-    
-    unet_writer = f"runs/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-    unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-    unet_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
-    # unet_inference()
-    
-    # unetpp_writer = runs/UnetPP_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}
-    # unetpp_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/UnetPP_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-    # unetpp_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, 4, NUM_WORKERS, True, unetpp_writer, unetpp_save_path, 'BCE')
-    # # unetpp_inference()
-    
-    # deeplabv3plus_writer = runs/DeepLabV3P_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}
-    # deeplabv3plus_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-    # deeplabv3p_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, 4, NUM_WORKERS, True, deeplabv3plus_writer, deeplabv3plus_save_path, 'BCE')
-    # # deeplabv3plus_inference()
+    try:
+        unet_writer = f"runs/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+        unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        unet_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
+        # unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_2023-08-08_09.pth"
+        # unet_inference(train_hipl_dataset[:15], unet_save_path, device, img_size=(160, 320))
+        
+    except Exception as e:
+        print(e)
+        print('Session Crashed')
     
     

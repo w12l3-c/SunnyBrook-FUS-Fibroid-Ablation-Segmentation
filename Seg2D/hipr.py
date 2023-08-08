@@ -40,8 +40,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 torch.manual_seed(42)
 
 # Define which directories are part of the dataset
-train_path_list = listsiemens[:7] + listsiemens[8:] + listbones[:-1] + listlowres
-test_path_list = [listsiemens[7]] + [listbones[-1]]
+train_path_list = listsiemens[:7] + listsiemens[8:] # + listbones[:-1] + listlowres
+test_path_list = [listsiemens[7]] # + [listbones[-1]]
 
 # Create a list of patient class objects
 train_patients = create_patient_list(path_list=train_path_list)
@@ -58,23 +58,15 @@ train_hipr_dataset = convert_to_PIL(train_hipr_dataset, img_size=(160, 320))
 val_hipr_dataset = convert_to_PIL(val_hipr_dataset, img_size=(160, 320))
 test_hipr_dataset = convert_to_PIL(test_hipr_dataset, img_size=(160, 320))
 
-if __name__ == "__main__":
-    # deeplabv3_run()
-    # deeplabv3_inference()
-    
-    unet_writer = f"runs/Unet_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-    unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-    unet_run(train_hipr_dataset, val_hipr_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
-    # unet_inference()
-    
-    # unetpp_writer = runs/UnetPP_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}
-    # unetpp_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/UnetPP_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-    # unetpp_run(train_hipr_dataset, val_hipr_dataset, device, NUM_EPOCHS, 4, NUM_WORKERS, True, unetpp_writer, unetpp_save_path, 'BCE')
-    # # unetpp_inference()
-    
-    # deeplabv3plus_writer = runs/DeepLabV3P_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}
-    # deeplabv3plus_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-    # deeplabv3p_run(train_hipr_dataset, val_hipr_dataset, device, NUM_EPOCHS, 4, NUM_WORKERS, True, deeplabv3plus_writer, deeplabv3plus_save_path, 'BCE')
-    # # deeplabv3plus_inference()
-    
+if __name__ == "__main__": 
+    try:
+        unet_writer = f"runs/Unet_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+        unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        unet_run(train_hipr_dataset, val_hipr_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
+        # unet_save_path = '/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipR_2023-08-08_11.pth'
+        # unet_inference(test_hipr_dataset, unet_save_path, device, (144, 320))
+        
+    except Exception as e:
+        print(e)
+        print('Training session crashed')
     

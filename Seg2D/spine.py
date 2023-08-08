@@ -246,3 +246,14 @@ if __name__ == "__main__":
     # unetpp_run()
     # unetpp_inference()
     
+    
+    # Model ok compare later
+    # try:
+    #     # deeplabv3plus_writer = f"runs/DeepLabV3P_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+    #     # deeplabv3plus_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+    #     # deeplabv3p_run(spine.train_spine_dataset, spine.val_spine_dataset, device, NUM_EPOCHS, 4, NUM_WORKERS, True, deeplabv3plus_writer, deeplabv3plus_save_path, 'BCE')
+    #     deeplabv3plus_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Spine_2023-08-05_04.pth"
+    #     deeplabv3plus_inference(spine.test_spine_dataset, deeplabv3plus_save_path, device)
+    # except Exception as e:
+    #     print(e)
+    #     print('This training sessions failed')
