@@ -29,7 +29,7 @@ from model_inference_fn import deeplabv3_inference, unet_inference, unetpp_infer
 # =================== Hyperparameters =================== #
 NUM_WORKERS = os.cpu_count() # Number of CPU cores used for data loading
 PIN_MEMORY = True   # Pin memory for faster GPU transfer
-NUM_EPOCHS = 300 # Just fot test, in pratical should be 100 or more
+NUM_EPOCHS = 100 # 100 - 300
 BATCH_SIZE = 8  # Between 8-16 is good
 IN_CHANNELS = 3 # RGB
 NUM_CLASSES = 2 # Classes to Segment
@@ -40,8 +40,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 torch.manual_seed(42)
 
 # Define which directories are part of the dataset
-train_path_list = listsiemens[:7] + listsiemens[8:] # + listbones[:-1] + listlowres
-test_path_list = [listsiemens[7]] # + [listbones[-1]]
+train_path_list = listsiemens[:7] + listsiemens[8:] + listbones[:-1] + listlowres
+test_path_list = [listsiemens[7]] + [listbones[-1]]
 
 # Create a list of patient class objects
 train_patients = create_patient_list(path_list=train_path_list)
@@ -63,9 +63,9 @@ if __name__ == "__main__":
         unet_writer = f"runs/Unet_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
         unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         unet_run(train_hipr_dataset, val_hipr_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE', 'Coronal')
-        # unet_save_path = '/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipR_2023-08-08_16.pth'
-        # unet_inference(test_hipr_dataset, unet_save_path, device, (160, 160))
-        
+        # unet_save_path = '/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipR_2023-08-09_08.pth'
+        # unet_inference(train_hipr_dataset, unet_save_path, device, (160, 160))
+            
     except Exception as e:
         print(e)
         print('Training session crashed')
