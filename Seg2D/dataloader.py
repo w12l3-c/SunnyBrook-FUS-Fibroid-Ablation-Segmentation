@@ -12,7 +12,7 @@ import cv2
 import numpy as np
 import pydicom
 import datasets
-from PIL import Image
+from PIL import Image, ImageEnhance, ImageOps
 
 # ---------------------- Data Augmentation ---------------------- #
 colour_jitter = transforms.Compose([
@@ -41,21 +41,42 @@ def random_rotation(image, mask):
 
     return image_rotated_pil, mask_rotated_pil
 
+def gamma_correction_pil(image, gamma=1.0):
+    enhancer = ImageEnhance.Brightness(image)
+    gamma_corrected_image = enhancer.enhance(gamma)
+    return gamma_corrected_image
+
 def convert_to_PIL(pairs, img_size=(320, 320)):
+    image_sizes = []
+    pixel_spaces = []
     for pair in pairs:
-        img = pair["img"]
+        img_path = pair["img"]
         mask = pair["mask"]
         
-        # cv2 image is (height, width, channels)
-        # PIL image is (width, height) + mode
-        # Tensor is (channels, height, width)
+        # The image format for different libraries:
+            # cv2 image is (height, width, channels)
+            # PIL image is (width, height) + mode
+            # Tensor is (channels, height, width)
         
-        img = pydicom.dcmread(img).pixel_array
+        file = pydicom.dcmread(img_path)
+        img = file.pixel_array
+        pixel_spaceing = file.PixelSpacing
+        
+        if img.shape not in image_sizes:
+            image_sizes.append(img.shape)
+        
+        if pixel_spaceing not in pixel_spaces:
+            pixel_spaces.append(pixel_spaceing)
+        
         img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+        img = cv2.equalizeHist(img.astype(np.uint8))
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        
         img = Image.fromarray(img)
         img = img.resize(img_size)
         img = img.convert("RGB")
+        # img = ImageOps.equalize(img)
+        # img = gamma_correction_pil(img, gamma=0.5)
         
         mask = Image.open(mask)
         mask = mask.resize(img_size)
@@ -64,6 +85,9 @@ def convert_to_PIL(pairs, img_size=(320, 320)):
         pair['img'] = img
         pair['mask'] = mask
     
+    # Test out the pixel spacing and image sizes    
+    # print(pixel_spaces)
+    # print(image_sizes)
     return pairs
 
 # ---------------------- Dataset & DataLoader ---------------------- #
