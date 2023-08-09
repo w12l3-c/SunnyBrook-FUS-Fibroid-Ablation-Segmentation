@@ -9,6 +9,8 @@ from torch.utils.tensorboard import SummaryWriter
 import segmentation_models_pytorch as smp
 import segmentation_models_pytorch.metrics as metrics
 
+from transformers import Trainer, TrainingArguments
+
 from tqdm.auto import tqdm
 
 # ---------------------- Early Stopping ---------------------- #
@@ -207,7 +209,7 @@ def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy,
     best_loss = 0
     best_model = deepcopy(model.state_dict())
     
-    early_stopper = EarlyStopper(patience=3, min_delta=10)
+    early_stopper = EarlyStopper(patience=15, min_delta=10)
 
     for epoch in tqdm(range(epochs)):
         train_loss, train_acc = unet_train_step(model, train_dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device)
@@ -234,10 +236,43 @@ def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy,
             # Track the PyTorch model architecture
             # writer.add_graph(model=model, input_to_model=torch.randn(1, 3, 320, 320).to(device)) # Pass in an example input
 
-        if early_stopper.early_stop(val_loss):             
-            break
+        # if early_stopper.early_stop(val_loss):
+        #     print('Model has not improved in 15 epochs.') 
+        #     print('Early stopping.........')            
+        #     break
         
     if writer:
         writer.close()
 
     return best_model, results
+
+
+
+# Need testing first
+def beit3_train_model(model, train_dataset, val_dataset, compute_metrics):
+    training_args = TrainingArguments(
+        output_dir="predictions",
+        learning_rate=1e-3,
+        num_train_epochs=100,
+        per_device_train_batch_size=2,
+        per_device_eval_batch_size=2,
+        save_total_limit=3,
+        evaluation_strategy="steps",
+        save_strategy="steps",
+        save_steps=20,
+        eval_steps=20,
+        logging_steps=1,
+        eval_accumulation_steps=5,
+        remove_unused_columns=False,
+        push_to_hub=False,
+    )
+    
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataset,
+        eval_dataset=val_dataset,
+        compute_metrics=compute_metrics,
+    )
+    
+    trainer.train()
