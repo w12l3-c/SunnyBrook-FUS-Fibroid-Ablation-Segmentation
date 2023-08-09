@@ -1,4 +1,4 @@
-from transformers import AutoImageProcessor, BeitForSemanticSegmentation
+from transformers import AutoImageProcessor, BeitForSemanticSegmentation, TrainingArguments, Trainer
 import evaluate
 
 import numpy as np
@@ -13,10 +13,6 @@ from torch.nn.functional import interpolate
 
 import torchvision
 import torchvision.transforms as transforms
-
-
-url = "http://images.cocodataset.org/val2017/000000039769.jpg"
-image = Image.open(requests.get(url, stream=True).raw)
 
 class Beit3():
     def __init__(self):
@@ -65,8 +61,6 @@ class Beit3():
             if save:
                 self.display_seg(image, pred_seg, display)
             
-
-
 # ---------------------- Metrics ---------------------- #
 metric = evaluate.load("mean_iou")
 
@@ -95,3 +89,37 @@ def compute_metrics(eval_pred):
                 metrics[key] = value.tolist()
 
         return metrics 
+    
+
+def accuracy_iou(pred, target):
+    pred_mask = pred > 0.5
+    target_mask = target > 0.5
+
+    intersection = torch.sum(pred_mask * target_mask)
+    union = torch.sum(pred_mask + target_mask)
+
+    iou = intersection / union
+    return iou
+
+def accuracy_intersect(pred, target):
+    pred_mask = pred > 0.5
+    target_mask = target > 0.5
+    intersection = torch.sum(pred_mask * target_mask)
+    pred_total = torch.sum(pred_mask == True)
+    
+    return intersection / pred_total
+
+def accuracy_basic(pred, target):
+    pred = pred > 0.5
+    target = target > 0.5
+    correct = torch.sum(pred == target)
+    return correct / pred.numel()
+
+
+# --------------------- Class Weights ------------------------ #
+def calculate_weights(mask):
+  total = mask.numel()
+  pos = torch.sum(mask > 0.5)
+  return total/pos
+
+
