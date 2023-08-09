@@ -303,7 +303,7 @@ def predict_UNET(model, dataset, device, img_size=(320, 320)):
     
     for i, prediction in enumerate(generator):
         image, mask, pred, acc_iou, acc_basic, time = prediction
-        image = gamma_correction_pil(image, gamma=1.5)  
+        image = gamma_correction_pil(image, gamma=2)  
         
         fig, ax = plt.subplots(1,4, figsize=(20,15))
         
