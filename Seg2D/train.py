@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
 
@@ -9,6 +10,24 @@ import segmentation_models_pytorch as smp
 import segmentation_models_pytorch.metrics as metrics
 
 from tqdm.auto import tqdm
+
+# ---------------------- Early Stopping ---------------------- #
+class EarlyStopper:
+    def __init__(self, patience=1, min_delta=0):
+        self.patience = patience
+        self.min_delta = min_delta
+        self.counter = 0
+        self.min_validation_loss = np.inf
+
+    def early_stop(self, validation_loss):
+        if validation_loss < self.min_validation_loss:
+            self.min_validation_loss = validation_loss
+            self.counter = 0
+        elif validation_loss > (self.min_validation_loss + self.min_delta):
+            self.counter += 1
+            if self.counter >= self.patience:
+                return True
+    
 
 # ---------------------- For DeepLabV3 Only ---------------------- #
 # ---------------------- Training Step ---------------------- #
@@ -113,7 +132,7 @@ def deeplabv3_train_model(model, train_dataloader, val_dataloader, loss_fn, accu
     return best_model, results
 
 
-# ---------------------- For UNet Only ---------------------- #
+# ---------------------- For UNet and Other Models Only ---------------------- #
 # ---------------------- Training Step ---------------------- #
 def unet_train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device):
     model.train()
@@ -187,6 +206,8 @@ def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy,
     results = { "train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
     best_loss = 0
     best_model = deepcopy(model.state_dict())
+    
+    early_stopper = EarlyStopper(patience=3, min_delta=10)
 
     for epoch in tqdm(range(epochs)):
         train_loss, train_acc = unet_train_step(model, train_dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device)
@@ -212,6 +233,10 @@ def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy,
 
             # Track the PyTorch model architecture
             # writer.add_graph(model=model, input_to_model=torch.randn(1, 3, 320, 320).to(device)) # Pass in an example input
+
+        if early_stopper.early_stop(val_loss):             
+            break
+        
     if writer:
         writer.close()
 
