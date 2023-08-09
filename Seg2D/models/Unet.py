@@ -180,8 +180,13 @@ def prepare_loss(option='BCE'):
         
     return criterion
 
-def prepare_optimizer(model, lr=1e-3):
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+def prepare_optimizer(model, lr=1e-3, option='Adam'):
+    if option == 'Adam':
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    if option == 'AdamW':
+        optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
+    if option == 'SGD':
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr)
     return optimizer
 
 def prepare_scheduler(optimizer, factor=0.1, patience=10, min_lr=1e-6, verbose=True):
