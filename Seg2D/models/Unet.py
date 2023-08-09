@@ -215,6 +215,22 @@ def accuracy_basic(pred, target):
     return correct / pred.numel()
 
 
+def accuracy_iou_multi(pred, target):
+    pred = torch.argmax(pred, dim=1)
+    ious = []
+    for i in torch.unique(target):
+        pred_mask = pred == i
+        target_mask = target == i
+
+        intersection = torch.sum(pred_mask * target_mask)
+        union = torch.sum(pred_mask + target_mask)
+
+        iou = intersection / union
+        ious.append(iou)
+    
+    return torch.mean(torch.tensor(ious))
+
+
 # --------------------- Class Weights ------------------------ #
 def calculate_weights(mask):
   total = mask.numel()

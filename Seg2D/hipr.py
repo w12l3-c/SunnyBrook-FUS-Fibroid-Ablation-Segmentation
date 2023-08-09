@@ -54,9 +54,9 @@ test_hipr_dataset = get_hipr(test_patients)
 train_hipr_dataset, val_hipr_dataset = train_test_split(train_hipr_dataset, test_size=0.1, random_state=42)
 
 # Convert the pydicom and mask jpg to PIL images
-train_hipr_dataset = convert_to_PIL(train_hipr_dataset, img_size=(320, 320))
-val_hipr_dataset = convert_to_PIL(val_hipr_dataset, img_size=(320, 320))
-test_hipr_dataset = convert_to_PIL(test_hipr_dataset, img_size=(320, 320))
+train_hipr_dataset = convert_to_PIL(train_hipr_dataset, img_size=(160, 160))
+val_hipr_dataset = convert_to_PIL(val_hipr_dataset, img_size=(160, 160))
+test_hipr_dataset = convert_to_PIL(test_hipr_dataset, img_size=(160, 160))
 
 if __name__ == "__main__": 
     try:
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         unet_run(train_hipr_dataset, val_hipr_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE', 'Coronal')
         # unet_save_path = '/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipR_2023-08-08_16.pth'
-        # unet_inference(test_hipr_dataset, unet_save_path, device, (320, 320))
+        # unet_inference(test_hipr_dataset, unet_save_path, device, (160, 160))
         
     except Exception as e:
         print(e)
