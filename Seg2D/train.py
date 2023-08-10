@@ -206,10 +206,8 @@ def unet_val_step(model, dataloader, loss_fn, accuracy, weight_fn, device):
 # ---------------------- Training Loop ---------------------- #
 def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device, epochs=10, writer=None):
     results = { "train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
-    best_loss = 0
-    best_model = deepcopy(model.state_dict())
     
-    early_stopper = EarlyStopper(patience=15, min_delta=10)
+    early_stopper = EarlyStopper(patience=5, min_delta=5)
 
     for epoch in tqdm(range(epochs)):
         train_loss, train_acc = unet_train_step(model, train_dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device)
@@ -222,9 +220,6 @@ def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy,
 
         print(f"Epoch: {epoch+1}/{epochs} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
 
-        if best_loss > train_loss:
-            best_model = deepcopy(model.state_dict())
-
         # Tensorboard Tracking
         if writer:
             writer.add_scalar(tag="Loss/train_loss", scalar_value=train_loss, global_step=epoch)
@@ -236,13 +231,15 @@ def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy,
             # Track the PyTorch model architecture
             # writer.add_graph(model=model, input_to_model=torch.randn(1, 3, 320, 320).to(device)) # Pass in an example input
 
-        # if early_stopper.early_stop(val_loss):
-        #     print('Model has not improved in 15 epochs.') 
-        #     print('Early stopping.........')            
-        #     break
+        if early_stopper.early_stop(val_loss):
+            print('Model has not improved in 15 epochs.') 
+            print('Early stopping.........')            
+            break
         
     if writer:
         writer.close()
+
+    best_model = deepcopy(model.state_dict())
 
     return best_model, results
 
