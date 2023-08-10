@@ -29,7 +29,7 @@ from model_inference_fn import deeplabv3_inference, unet_inference, unetpp_infer
 # =================== Hyperparameters =================== #
 NUM_WORKERS = os.cpu_count() # Number of CPU cores used for data loading
 PIN_MEMORY = True   # Pin memory for faster GPU transfer
-NUM_EPOCHS = 300 # Just fot test, in pratical should be 100 or more
+NUM_EPOCHS = 150 # Just fot test, in pratical should be 100 or more
 BATCH_SIZE = 8  # Between 8-16 is good
 IN_CHANNELS = 3 # RGB
 NUM_CLASSES = 2 # Classes to Segment
@@ -40,8 +40,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 torch.manual_seed(42)
 
 # Define which directories are part of the dataset
-train_path_list = listsiemens[:7] + listsiemens[8:] # + listbones[:-1] + listlowres
-test_path_list = [listsiemens[7]] # + [listbones[-1]]
+train_path_list = listsiemens[:7] + listsiemens[8:] + listbones[:-1] + listlowres
+test_path_list = [listsiemens[7]] + [listbones[-1]]
 
 # Create a list of patient class objects
 train_patients = create_patient_list(path_list=train_path_list)
@@ -54,17 +54,18 @@ test_hipl_dataset = get_hipl(test_patients)
 train_hipl_dataset, val_hipl_dataset = train_test_split(train_hipl_dataset, test_size=0.1, random_state=42)
 
 # Convert the pydicom and mask jpg to PIL images
-train_hipl_dataset = convert_to_PIL(train_hipl_dataset, img_size=(160, 320))
-val_hipl_dataset = convert_to_PIL(val_hipl_dataset, img_size=(160, 320))
-test_hipl_dataset = convert_to_PIL(test_hipl_dataset, img_size=(160, 320))
+train_hipl_dataset = convert_to_PIL(train_hipl_dataset, img_size=(160, 160))
+val_hipl_dataset = convert_to_PIL(val_hipl_dataset, img_size=(160, 160))
+test_hipl_dataset = convert_to_PIL(test_hipl_dataset, img_size=(160, 160))
 
 if __name__ == "__main__":
+    unet_writer = f"runs/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+    unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+    unet_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
+    # unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_2023-08-08_09.pth"
+    # unet_inference(train_hipl_dataset[:15], unet_save_path, device, img_size=(160, 320))
     try:
-        unet_writer = f"runs/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-        unet_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
-        # unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_2023-08-08_09.pth"
-        # unet_inference(train_hipl_dataset[:15], unet_save_path, device, img_size=(160, 320))
+        print('fuck')
         
     except Exception as e:
         print(e)
