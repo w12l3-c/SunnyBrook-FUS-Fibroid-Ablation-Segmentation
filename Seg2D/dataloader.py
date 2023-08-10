@@ -60,23 +60,23 @@ def convert_to_PIL(pairs, img_size=(320, 320)):
         
         file = pydicom.dcmread(img_path)
         img = file.pixel_array
-        pixel_spaceing = file.PixelSpacing
+        # pixel_spaceing = file.PixelSpacing
         
         if img.shape not in image_sizes:
             image_sizes.append(img.shape)
         
-        if pixel_spaceing not in pixel_spaces:
-            pixel_spaces.append(pixel_spaceing)
+        # if pixel_spaceing not in pixel_spaces:
+        #     pixel_spaces.append(pixel_spaceing)
         
         img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-        img = cv2.equalizeHist(img.astype(np.uint8))
+        # img = cv2.equalizeHist(img.astype(np.uint8))
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         
         img = Image.fromarray(img)
         img = img.resize(img_size)
         img = img.convert("RGB")
         # img = ImageOps.equalize(img)
-        # img = gamma_correction_pil(img, gamma=0.5)
+        img = gamma_correction_pil(img, gamma=1.5)
         
         mask = Image.open(mask)
         mask = mask.resize(img_size)
