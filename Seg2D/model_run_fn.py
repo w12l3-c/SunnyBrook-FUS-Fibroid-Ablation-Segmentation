@@ -64,9 +64,9 @@ def unet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers
     flip = 0.3 if axis == 'Sagittal' else 0.0
     transform = Unet.prepare_transform(flip)
     loss_fn = Unet.prepare_loss(loss)
-    optimizer = Unet.prepare_optimizer(model)
+    optimizer = Unet.prepare_optimizer(model, option='AdamW')
     scheduler = Unet.prepare_scheduler(optimizer)
-    
+
     # Prepare train and test dataloader
     if len(train_dataset)%batch_size == 1 or len(val_dataset)%batch_size == 1:
         # Batch number of 1 will cause error in batchnorm
