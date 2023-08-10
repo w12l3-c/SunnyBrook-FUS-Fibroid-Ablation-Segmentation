@@ -65,8 +65,8 @@ if __name__ == "__main__":
     # unet_writer = f"runs/Unet_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
     # unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
     # unet_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
-    # unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Muscle_2023-08-04_10.pth"
-    # unet_inference(test_muscle_dataset, unet_save_path, device)
+    unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Muscle_2023-08-10_11.pth"
+    unet_inference(test_muscle_dataset, unet_save_path, device)
     
     # Trash
     # try:
