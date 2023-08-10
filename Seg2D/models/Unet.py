@@ -16,7 +16,7 @@ import time
 import pydicom
 import numpy as np
 import cv2
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageOps
 import matplotlib.pyplot as plt
 
 import torchvision
@@ -142,6 +142,7 @@ class UNet(nn.Module):
     
     
 # --------------------- Pytorch UNet Library --------------------- #
+from torchinfo import summary
 def auto_UNET(in_channels, num_classes):
     model = smp.Unet(
         encoder_name="resnet101",       
@@ -149,7 +150,7 @@ def auto_UNET(in_channels, num_classes):
         in_channels=in_channels,                  
         classes=num_classes,                      
     )
-    
+
     # Somehow freezing weights decrease performance
     # for param in model.encoder.parameters():
     #     param.requires_grad = False
@@ -268,6 +269,8 @@ def predict(model, dataset, device, img_size):
             
             image = image.convert('RGB')
             resized_image = image.resize(img_size)
+            resized_image = gamma_correction_pil(resized_image, gamma=1.5)
+            #resized_image = ImageOps.equalize(resized_image)
             transformed_image = transform(resized_image).to(device)
             
             start_time = time.time()
@@ -303,7 +306,7 @@ def predict_UNET(model, dataset, device, img_size=(320, 320)):
     
     for i, prediction in enumerate(generator):
         image, mask, pred, acc_iou, acc_basic, time = prediction
-        image = gamma_correction_pil(image, gamma=2)  
+        image = gamma_correction_pil(image, gamma=1.5)  
         
         fig, ax = plt.subplots(1,4, figsize=(20,15))
         
