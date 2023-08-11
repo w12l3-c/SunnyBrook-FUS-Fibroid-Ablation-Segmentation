@@ -1,3 +1,11 @@
+# =============================================================================
+# File Description:
+# ------------------
+# (Deprecated)
+# This file contains the functions for KNN segmentation
+# ======================================================================== #
+
+# =================== Imports =================== #
 import numpy as np
 import matplotlib.pyplot as plt
 import pydicom
@@ -5,6 +13,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from skimage.feature import greycomatrix, greycoprops
 from skimage.segmentation import mark_boundaries
 
+# =================== KNN =================== #
 def texture_features(image):
     # Calculate texture features using Grey-Level Co-occurrence Matrix (GLCM)
     glcm = greycomatrix(image, [1], [0, np.pi/4, np.pi/2, 3*np.pi/4], levels=256, symmetric=True, normed=True)

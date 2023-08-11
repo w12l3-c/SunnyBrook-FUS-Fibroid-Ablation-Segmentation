@@ -63,7 +63,7 @@ def deeplabv3_inference(test_dataset, model_path, device):
     plt.imshow(r, alpha=0.5)
     
     
-def unet_inference(test_dataset, model_path, device, img_size=(320, 320)):
+def unet_inference(test_dataset, model_path, device, img_size=(320, 320), display=True):
     # Set Seed
     torch.manual_seed(42)
     
@@ -72,7 +72,7 @@ def unet_inference(test_dataset, model_path, device, img_size=(320, 320)):
     model = model.to(device)
     
     # Run Inference function
-    Unet.predict_UNET(model, test_dataset, device, img_size)
+    Unet.predict_UNET(model, test_dataset, device, img_size, display)
     
     
 def unetpp_inference(test_dataset, model_path, device, img_size=(320, 320)):

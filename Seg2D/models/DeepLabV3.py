@@ -1,3 +1,10 @@
+# =============================================================================
+# File Description:
+# ------------------
+# This file is to contain the functions and architecture for the DeepLabV3 model
+# =============================================================================
+
+# =================== Imports =================== #
 import torch
 import torch.nn as nn
 
@@ -12,7 +19,7 @@ import matplotlib.pyplot as plt
 
 import segmentation_models_pytorch as smp
 
-# ---------------------- Pretrained DeepLabV3 ---------------------- #
+# ================== Pretrained DeepLabV3 ================== #
 def DeepLabV3(in_channels, num_classes, size=None):
     """
     Create a pretrained DeepLabV3 model for semantic segmentation with specified settings.
@@ -64,6 +71,7 @@ def DeepLabV3(in_channels, num_classes, size=None):
     model.classifier[4] = nn.Conv2d(256, num_classes, kernel_size=(1, 1), stride=(1, 1))
     model.aux_classifier[4] = nn.Conv2d(256, num_classes, kernel_size=(1, 1), stride=(1, 1))
 
+    # Modify the forward function in the original model
     # def forward(self, x):
     #   x = self.backbone(x)
     #   main_logits = self.classifier(x['out'])
@@ -87,7 +95,7 @@ def DeepLabV3(in_channels, num_classes, size=None):
     return model, transform, loss_fn, optimizer, scheduler
 
 
-# ---------------------- Accuracy ---------------------- #
+# ================== Accuracy ================== #
 def binary_segmentation_accuracy(logits, mask):
     """
     Compute accuracy for binary segmentation.
@@ -139,8 +147,18 @@ def binary_segmentation_iou(logits, mask):
     return iou.item()
 
 
-# ---------------------- Inference ---------------------- #
+# ================== Inference ================== #
 def display(img, pred):
+    """
+    Overlay the segmentation prediction on the input image and display it.
+
+    Args:
+        img (PIL.Image.Image): Input image.
+        pred (torch.Tensor): Segmentation prediction tensor.
+
+    Returns:
+        PIL.Image.Image: Overlay image with segmentation prediction.
+    """
     palette = torch.tensor([2 ** 25 - 1, 2 ** 15 - 1, 2 ** 21 - 1])
     colors = torch.randn(1, ) * palette
     colors = (colors % 255).numpy().astype("uint8")
@@ -155,6 +173,17 @@ def display(img, pred):
     
 
 def inference(model, img_path, device):
+    """
+    Perform image segmentation inference using a model.
+
+    Args:
+        model (torch.nn.Module): Segmentation model.
+        img_path (str): Path to the input image.
+        device (torch.device): Device for inference (e.g., 'cuda' or 'cpu').
+
+    Returns:
+        PIL.Image.Image: Overlay image with segmentation prediction.
+    """
     model = model.to(device)
     model.eval()
     
@@ -179,6 +208,17 @@ def inference(model, img_path, device):
     
     
 def inference_all(model, dir_path, device):
+    """
+    Perform image segmentation inference on all images in a directory.
+
+    Args:
+        model (torch.nn.Module): Segmentation model.
+        dir_path (str): Path to the directory containing images.
+        device (torch.device): Device for inference (e.g., 'cuda' or 'cpu').
+
+    Returns:
+        List[PIL.Image.Image]: List of overlay images with segmentation predictions.
+    """
     dir_path = sorted(os.listdir(dir_path))
     slices = []
     for img_path in dir_path:

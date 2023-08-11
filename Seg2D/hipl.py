@@ -1,3 +1,12 @@
+# ======================================================================== #
+# File Description:
+# ------------------
+# This file is used for train or inferencing model on the Left Hip Dataset
+# It is a binary segmentation task
+# Comment out the training or inference code to run the other
+# ======================================================================== #
+
+# =================== Imports =================== #
 import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
@@ -23,17 +32,15 @@ from models import DeepLabV3, Unet, Unetpp
 from model_run_fn import deeplabv3_run, unet_run, unetpp_run, deeplabv3p_run
 from model_inference_fn import deeplabv3_inference, unet_inference, unetpp_inference
 
-
-# This will be just segmenting hipl (1 class) -> Binary Segmentation Task
-
 # =================== Hyperparameters =================== #
+# To set hyperparams for model, go to model_run_fn.py 
 NUM_WORKERS = os.cpu_count() # Number of CPU cores used for data loading
-PIN_MEMORY = True   # Pin memory for faster GPU transfer
-NUM_EPOCHS = 150 # Just fot test, in pratical should be 100 or more
-BATCH_SIZE = 8  # Between 8-16 is good
+PIN_MEMORY = True # Pin memory for faster GPU transfer
+NUM_EPOCHS = 150 # 100-300
+BATCH_SIZE = 8 # Optimally 8-16
 IN_CHANNELS = 3 # RGB
 NUM_CLASSES = 2 # Classes to Segment
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu' # gpu if available
 
 # =================== Patient Dataset =================== #
 # Set seed for reproducibility
@@ -59,16 +66,25 @@ val_hipl_dataset = convert_to_PIL(val_hipl_dataset, img_size=(160, 160))
 test_hipl_dataset = convert_to_PIL(test_hipl_dataset, img_size=(160, 160))
 
 if __name__ == "__main__":
-    unet_writer = f"runs/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-    unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-    unet_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
-    # unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_2023-08-08_09.pth"
-    # unet_inference(train_hipl_dataset[:15], unet_save_path, device, img_size=(160, 320))
-    try:
-        print('fuck')
+    # Training Block
+    # try:
+    #     # Set up the tensorboard and save path
+    #     unet_writer = f"runs/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+    #     unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+    #     # Traing Model
+    #     unet_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
+    # except Exception as e:
+    #     print(e)
+    #     print('Training Session Crashed')
         
+    # Inference Block
+    try:
+        # Set up the path where the model '.pth' file is saved
+        unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_2023-08-10_16.pth"
+        # Inference Model
+        unet_inference(test_hipl_dataset, unet_save_path, device, img_size=(160, 160), display=True)
     except Exception as e:
         print(e)
-        print('Session Crashed')
+        print('Inference Session Crashed')
     
     

@@ -23,13 +23,14 @@ from models import DeepLabV3, Unet, Unetpp
 from model_run_fn import deeplabv3_run, unet_run, unetpp_run, deeplabv3p_run
 from model_inference_fn import deeplabv3_inference, unet_inference, unetpp_inference
 
+import skin, hipl, hipr
 
 # This will be just segmenting bowel (1 class) -> Binary Segmentation Task
 
 # =================== Hyperparameters =================== #
 NUM_WORKERS = os.cpu_count() # Number of CPU cores used for data loading
 PIN_MEMORY = True   # Pin memory for faster GPU transfer
-NUM_EPOCHS = 300 # Just fot test, in pratical should be 100 or more
+NUM_EPOCHS = 200 # Just fot test, in pratical should be 100 or more
 BATCH_SIZE = 8  # Between 8-16 is good
 IN_CHANNELS = 3 # RGB
 NUM_CLASSES = 2 # Classes to Segment
@@ -60,22 +61,52 @@ test_bowel_dataset = convert_to_PIL(test_bowel_dataset)
 
 if __name__ == "__main__":  
     try:
-        # unet_writer = f"runs/Unet_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        # unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-        # unet_run(bowel.train_bowel_dataset, bowel.val_bowel_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
-        unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Bowel_2023-08-05_08.pth"
-        unet_inference(val_bowel_dataset[:15], unet_save_path, device)
+        unet_writer = f"runs/Unet_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+        unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        unet_run(train_bowel_dataset, val_bowel_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
+        # unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Bowel_2023-08-05_08.pth"
+        # unet_inference(val_bowel_dataset[:15], unet_save_path, device)
+    except Exception as e:
+        print(e)
+        print('This training sessions failed')
+    
+    # try:
+    #     # unetpp_writer = f"runs/UnetPP_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+    #     # unetpp_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/UnetPP_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+    #     # unetpp_run(bowel.train_bowel_dataset, bowel.val_bowel_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unetpp_writer, unetpp_save_path, 'BCE')
+    #     unetpp_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/UnetPP_Muscle_2023-08-04_16.pth"
+    #     unetpp_inference(val_bowel_dataset[:15], unetpp_save_path, device)
+    # except Exception as e:
+    #     print('This training sessions failed')
+    
+    try:
+        deeplabv3p_writer = f"runs/DeepLabV3P_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+        deeplabv3p_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        deeplabv3p_run(train_bowel_dataset, val_bowel_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, deeplabv3p_writer, deeplabv3p_save_path, 'BCE')
+    except Exception as e:
+        print(e)
+        print('This training sessions failed')
+        
+    try:
+        deeplabv3p_writer = f"runs/DeepLabV3P_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+        deeplabv3p_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        deeplabv3p_run(skin.train_skin_dataset, skin.val_skin_dataset, device, skin.NUM_EPOCHS, 8, NUM_WORKERS, True, deeplabv3p_writer, deeplabv3p_save_path, 'BCE')
     except Exception as e:
         print(e)
         print('This training sessions failed')
     
     try:
-        # unetpp_writer = f"runs/UnetPP_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        # unetpp_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/UnetPP_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-        # unetpp_run(bowel.train_bowel_dataset, bowel.val_bowel_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unetpp_writer, unetpp_save_path, 'BCE')
-        unetpp_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/UnetPP_Muscle_2023-08-04_16.pth"
-        unetpp_inference(val_bowel_dataset[:15], unetpp_save_path, device)
+        deeplabv3p_writer = f"runs/DeepLabV3P_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+        deeplabv3p_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        deeplabv3p_run(hipl.train_hipl_dataset, hipl.val_hipl_dataset, device, hipl.NUM_EPOCHS, 8, NUM_WORKERS, True, deeplabv3p_writer, deeplabv3p_save_path, 'BCE')
     except Exception as e:
+        print(e)
         print('This training sessions failed')
-    
-    
+        
+    try:
+        deeplabv3p_writer = f"runs/DeepLabV3P_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+        deeplabv3p_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_HipR_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        deeplabv3p_run(hipr.train_hipr_dataset, hipr.val_hipr_dataset, device, hipr.NUM_EPOCHS, 8, NUM_WORKERS, True, deeplabv3p_writer, deeplabv3p_save_path, 'BCE')
+    except Exception as e:
+        print(e)
+        print('This training sessions failed')

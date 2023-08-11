@@ -1,3 +1,10 @@
+# =============================================================================
+# File Description:
+# ------------------
+# This file is to contain the functions and architecture for the Unet++ model
+# =============================================================================
+
+# =================== Imports =================== #
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -10,12 +17,12 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import pydicom
-from PIL import Image
+from PIL import Image, ImageOps, ImageEnhance
 
 import segmentation_models_pytorch as smp
 from segmentation_models_pytorch.encoders import get_preprocessing_params
 
-# --------------------- Pytorch UNet++ --------------------- #
+# ===================== Pytorch UNet++ ===================== #
 def auto_UNETPP(in_channels, num_classes):
     model = smp.UnetPlusPlus(
         encoder_name="resnet50",       
@@ -27,7 +34,7 @@ def auto_UNETPP(in_channels, num_classes):
     return model
 
 def prepare_transform():
-    params = get_preprocessing_params('resnet101', pretrained='imagenet')
+    params = get_preprocessing_params('resnet50', pretrained='imagenet')
     transform = torchvision.transforms.Compose([
         torchvision.transforms.RandomHorizontalFlip(0.3),
         torchvision.transforms.ToTensor(),
@@ -37,7 +44,7 @@ def prepare_transform():
 
 def prepare_loss(option='BCE'):
     if option == 'BCE':
-        criterion = nn.BCEWithLogitsLoss()  # pos_weight=torch.tensor([1.0, 5.0])
+        criterion = nn.BCEWithLogitsLoss()
     if option == 'CE':
         criterion = nn.CrossEntropyLoss()
     if option == 'Dice_Binary':
@@ -55,7 +62,7 @@ def prepare_scheduler(optimizer, factor=0.1, patience=10, min_lr=1e-5, verbose=T
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=factor, patience=patience, min_lr=min_lr, verbose=verbose)
     return scheduler
 
-# --------------------- Accuracy --------------------- #
+# ===================== Accuracy ===================== #
 def accuracy_iou(pred, target):
     pred_mask = pred > 0.5
     target_mask = target > 0.5
@@ -81,14 +88,41 @@ def accuracy_basic(pred, target):
     return correct / pred.numel()
 
 
-# --------------------- Class Weights ------------------------ #
+def accuracy_iou_multi(pred, target):
+    pred = torch.argmax(pred, dim=1)
+    ious = []
+    for i in torch.unique(target):
+        pred_mask = pred == i
+        target_mask = target == i
+
+        intersection = torch.sum(pred_mask * target_mask)
+        union = torch.sum(pred_mask + target_mask)
+
+        iou = intersection / union
+        ious.append(iou)
+    
+    return torch.mean(torch.tensor(ious))
+
+
+# ===================== Class Weights ===================== #
 def calculate_weights(mask):
   total = mask.numel()
   pos = torch.sum(mask > 0.5)
   return total/pos
 
+# ===================== Gamma Correction ===================== #
+def gamma_correction_cv2(image, gamma=1.0):
+    inv_gamma = 1.0 / gamma
+    table = np.array([((i / 255.0) ** inv_gamma) * 255 for i in np.arange(0, 256)])
+    return cv2.LUT(image, table.astype(np.uint8))
 
-# --------------------- Inference --------------------- #
+def gamma_correction_pil(image, gamma=1.0):
+    enhancer = ImageEnhance.Brightness(image)
+    gamma_corrected_image = enhancer.enhance(gamma)
+    return gamma_corrected_image
+
+
+# ================ Inference ================ #
 def predict(model, dataset, device, img_size):
     transform = torchvision.transforms.Compose([
         torchvision.transforms.ToTensor(),
@@ -103,6 +137,8 @@ def predict(model, dataset, device, img_size):
             
             image = image.convert('RGB')
             resized_image = image.resize(img_size)
+            resized_image = gamma_correction_pil(resized_image, gamma=1.5)
+            #resized_image = ImageOps.equalize(resized_image)
             transformed_image = transform(resized_image).to(device)
             
             start_time = time.time()
@@ -111,7 +147,8 @@ def predict(model, dataset, device, img_size):
             end_time = time.time()
             
             totensor = torchvision.transforms.ToTensor()
-            acc = accuracy_iou(pred, totensor(mask.convert('L').resize(img_size)).to(device))
+            acc_iou = accuracy_iou(pred, totensor(mask.convert('L').resize(img_size)).to(device))
+            acc_basic = accuracy_basic(pred, totensor(mask.convert('L').resize(img_size)).to(device))
             
             pred = pred.squeeze().cpu().numpy() * 255
             pred = cv2.resize(pred, img_size)
@@ -120,7 +157,7 @@ def predict(model, dataset, device, img_size):
             
             inference_time = end_time - start_time
             
-            yield (image, mask, pred, acc, inference_time)
+            yield (image, mask, pred, acc_iou, acc_basic, inference_time)
             
             
 def predict_UNETPP(model, dataset, device, img_size=(320, 320)):

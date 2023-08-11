@@ -1,3 +1,10 @@
+# =============================================================================
+# File Description:
+# ------------------
+# This file is to contain the functions and architecture for the DeepLabV3 model
+# =============================================================================
+
+# =================== Imports =================== #
 from transformers import AutoImageProcessor, BeitForSemanticSegmentation, TrainingArguments, Trainer
 import evaluate
 
@@ -14,6 +21,7 @@ from torch.nn.functional import interpolate
 import torchvision
 import torchvision.transforms as transforms
 
+# ================== Pretrained Beit3 ================== #
 class Beit3():
     def __init__(self):
         self.image_processor = AutoImageProcessor.from_pretrained("microsoft/beit-base-finetuned-ade-640-640")
@@ -61,7 +69,7 @@ class Beit3():
             if save:
                 self.display_seg(image, pred_seg, display)
             
-# ---------------------- Metrics ---------------------- #
+# ====================== Metrics ====================== #
 metric = evaluate.load("mean_iou")
 
 def compute_metrics(eval_pred):
@@ -116,7 +124,7 @@ def accuracy_basic(pred, target):
     return correct / pred.numel()
 
 
-# --------------------- Class Weights ------------------------ #
+# ===================== Class Weights ====================== #
 def calculate_weights(mask):
   total = mask.numel()
   pos = torch.sum(mask > 0.5)

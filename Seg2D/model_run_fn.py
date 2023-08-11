@@ -21,8 +21,26 @@ from train import deeplabv3_train_model, unet_train_model
 
 from models import DeepLabV3, Unet, Unetpp, DeepLabV3plus, FPN, MAnet
 
+# =================== Run Train Script =================== #
+# All of these functions are for training individual models
+# The scipt with the parts name ex. spine.py will run these functions 
+
 
 def deeplabv3_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path):
+    """
+    Train the DeepLabV3 model and save the best model checkpoint.
+    
+    Args:
+        train_dataset (Dataset): Training dataset.
+        val_dataset (Dataset): Validation dataset.
+        device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
+        epochs (int): Number of training epochs.
+        batch_size (int): Batch size for training.
+        num_workers (int): Number of workers for data loading.
+        pin_memory (bool): Whether to pin memory for DataLoader.
+        writer_path (str): Path for TensorBoard writer.
+        save_path (str): Path to save the trained model checkpoint.
+    """
     # Prepare model, transformation, loss function, optimizer, scheduler
     model, transform, loss_fn, optimizer, scheduler = DeepLabV3.DeepLabV3(in_channels=3, num_classes=1, size='regular')
     model = model.to(device)
@@ -54,6 +72,22 @@ def deeplabv3_run(train_dataset, val_dataset, device, epochs, batch_size, num_wo
     
     
 def unet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
+    """
+    Train the UNet model and save the best model checkpoint.
+    
+    Args:
+        train_dataset (Dataset): Training dataset.
+        val_dataset (Dataset): Validation dataset.
+        device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
+        epochs (int): Number of training epochs.
+        batch_size (int): Batch size for training.
+        num_workers (int): Number of workers for data loading.
+        pin_memory (bool): Whether to pin memory for DataLoader.
+        writer_path (str): Path for TensorBoard writer.
+        save_path (str): Path to save the trained model checkpoint.
+        loss (str, optional): Loss function to use (default is 'BCE').
+        axis (str, optional): Axis for flip augmentation (default is 'Sagittal').
+    """
     # Set Seed
     torch.manual_seed(42)
     
@@ -93,7 +127,23 @@ def unet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers
     print(f"Model saved at {save_path}")
     
 
-def unetpp_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE'): 
+def unetpp_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
+    """
+    Train the UNet++ model and save the best model checkpoint.
+    
+    Args:
+        train_dataset (Dataset): Training dataset.
+        val_dataset (Dataset): Validation dataset.
+        device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
+        epochs (int): Number of training epochs.
+        batch_size (int): Batch size for training.
+        num_workers (int): Number of workers for data loading.
+        pin_memory (bool): Whether to pin memory for DataLoader.
+        writer_path (str): Path for TensorBoard writer.
+        save_path (str): Path to save the trained model checkpoint.
+        loss (str, optional): Loss function to use (default is 'BCE').
+        axis (str, optional): Axis for flip augmentation (default is 'Sagittal').
+    """
     # Set Seed
     torch.manual_seed(42)
     
@@ -101,9 +151,10 @@ def unetpp_run(train_dataset, val_dataset, device, epochs, batch_size, num_worke
     model = Unetpp.auto_UNETPP(in_channels=3, num_classes=2)
     model = model.to(device)
     
-    transform = Unetpp.prepare_transform()
+    flip = 0.3 if axis == 'Sagittal' else 0.0
+    transform = Unetpp.prepare_transform(flip)
     loss_fn = Unetpp.prepare_loss(loss)
-    optimizer = Unetpp.prepare_optimizer(model)
+    optimizer = Unetpp.prepare_optimizer(model, option='AdamW')
     scheduler = Unetpp.prepare_scheduler(optimizer)
     
     # Prepare train and test dataloader
@@ -132,7 +183,23 @@ def unetpp_run(train_dataset, val_dataset, device, epochs, batch_size, num_worke
     print(f"Model saved at {save_path}")
     
     
-def deeplabv3p_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE'): 
+def deeplabv3p_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
+    """
+    Train the DeepLabV3+ model and save the best model checkpoint.
+    
+    Args:
+        train_dataset (Dataset): Training dataset.
+        val_dataset (Dataset): Validation dataset.
+        device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
+        epochs (int): Number of training epochs.
+        batch_size (int): Batch size for training.
+        num_workers (int): Number of workers for data loading.
+        pin_memory (bool): Whether to pin memory for DataLoader.
+        writer_path (str): Path for TensorBoard writer.
+        save_path (str): Path to save the trained model checkpoint.
+        loss (str, optional): Loss function to use (default is 'BCE').
+        axis (str, optional): Axis for flip augmentation (default is 'Sagittal').
+    """
     # Set Seed
     torch.manual_seed(42)
     
@@ -140,10 +207,11 @@ def deeplabv3p_run(train_dataset, val_dataset, device, epochs, batch_size, num_w
     model = DeepLabV3plus.auto_DEEPLABV3P(in_channels=3, num_classes=2)
     model = model.to(device)
     
-    transform = DeepLabV3plus.prepare_transform()
+    flip = 0.3 if axis == 'Sagittal' else 0.0
+    transform = DeepLabV3plus.prepare_transform(flip)
     loss_fn = DeepLabV3plus.prepare_loss(loss)
     optimizer = DeepLabV3plus.prepare_optimizer(model)
-    scheduler = DeepLabV3plus.prepare_scheduler(optimizer)
+    scheduler = DeepLabV3plus.prepare_scheduler(optimizer, option='AdamW')
     
     # Prepare train and test dataloader
     if len(train_dataset)%batch_size == 1 or len(val_dataset)%batch_size == 1:
@@ -171,7 +239,23 @@ def deeplabv3p_run(train_dataset, val_dataset, device, epochs, batch_size, num_w
     print(f"Model saved at {save_path}")
     
     
-def fpn_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE'): 
+def fpn_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
+    """
+    Train the FPN model and save the best model checkpoint.
+    
+    Args:
+        train_dataset (Dataset): Training dataset.
+        val_dataset (Dataset): Validation dataset.
+        device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
+        epochs (int): Number of training epochs.
+        batch_size (int): Batch size for training.
+        num_workers (int): Number of workers for data loading.
+        pin_memory (bool): Whether to pin memory for DataLoader.
+        writer_path (str): Path for TensorBoard writer.
+        save_path (str): Path to save the trained model checkpoint.
+        loss (str, optional): Loss function to use (default is 'BCE').
+        axis (str, optional): Axis for flip augmentation (default is 'Sagittal').
+    """
     # Set Seed
     torch.manual_seed(42)
     
@@ -179,10 +263,11 @@ def fpn_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers,
     model = FPN.auto_FPN(in_channels=3, num_classes=2)
     model = model.to(device)
     
-    transform = FPN.prepare_transform()
+    flip = 0.3 if axis == 'Sagittal' else 0.0
+    transform = FPN.prepare_transform(flip)
     loss_fn = FPN.prepare_loss(loss)
     optimizer = FPN.prepare_optimizer(model)
-    scheduler = FPN.prepare_scheduler(optimizer)
+    scheduler = FPN.prepare_scheduler(optimizer, option='AdamW')
     
     # Prepare train and test dataloader
     if len(train_dataset)%batch_size == 1 or len(val_dataset)%batch_size == 1:
@@ -210,7 +295,23 @@ def fpn_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers,
     print(f"Model saved at {save_path}")
     
     
-def manet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE'): 
+def manet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
+    """
+    Train the MAnet model and save the best model checkpoint.
+    
+    Args:
+        train_dataset (Dataset): Training dataset.
+        val_dataset (Dataset): Validation dataset.
+        device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
+        epochs (int): Number of training epochs.
+        batch_size (int): Batch size for training.
+        num_workers (int): Number of workers for data loading.
+        pin_memory (bool): Whether to pin memory for DataLoader.
+        writer_path (str): Path for TensorBoard writer.
+        save_path (str): Path to save the trained model checkpoint.
+        loss (str, optional): Loss function to use (default is 'BCE').
+        axis (str, optional): Axis for flip augmentation (default is 'Sagittal').
+    """
     # Set Seed
     torch.manual_seed(42)
     
@@ -218,9 +319,10 @@ def manet_run(train_dataset, val_dataset, device, epochs, batch_size, num_worker
     model = MAnet.auto_MANET(in_channels=3, num_classes=2)
     model = model.to(device)
     
-    transform = MAnet.prepare_transform()
+    flip = 0.3 if axis == 'Sagittal' else 0.0
+    transform = MAnet.prepare_transform(flip)
     loss_fn = MAnet.prepare_loss(loss)
-    optimizer = MAnet.prepare_optimizer(model)
+    optimizer = MAnet.prepare_optimizer(model, option='AdamW')
     scheduler = MAnet.prepare_scheduler(optimizer)
     
     # Prepare train and test dataloader

@@ -1,3 +1,10 @@
+# =============================================================================
+# File Description:
+# ------------------
+# This file is to contain the functions and architecture for the MAnet model
+# =============================================================================
+
+# =================== Imports =================== #
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

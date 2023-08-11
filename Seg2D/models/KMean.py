@@ -1,3 +1,10 @@
+# =============================================================================
+# File Description:
+# ------------------
+# This file contains functions for KMeans segmentation
+# ======================================================================== #
+
+# =================== Imports =================== #
 from sklearn.cluster import KMeans
 import cv2
 import pydicom
@@ -5,6 +12,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
+# =================== KMeans =================== #
 def display(image, result):
     plt.imshow(image, alpha=0.9)
     plt.imshow(result, alpha=0.5)
