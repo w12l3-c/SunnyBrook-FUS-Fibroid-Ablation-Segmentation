@@ -65,8 +65,8 @@ if __name__ == "__main__":
     # unet_writer = f"runs/Unet_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
     # unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
     # unet_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
-    unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Muscle_2023-08-10_11.pth"
-    unet_inference(test_muscle_dataset, unet_save_path, device)
+    # unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Muscle_2023-08-10_11.pth"
+    # unet_inference(test_muscle_dataset, unet_save_path, device)
     
     # Trash
     # try:
@@ -80,15 +80,15 @@ if __name__ == "__main__":
     #     print('This training sessions failed')
 
     # Model ok Compare with Unet later
-    try:
-        # deeplabv3plus_writer = f"runs/DeepLabV3P_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        # deeplabv3plus_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-        # deeplabv3p_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, 4, NUM_WORKERS, True, deeplabv3plus_writer, deeplabv3plus_save_path, 'BCE')
-        deeplabv3plus_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Muscle_2023-08-05_00.pth"
-        deeplabv3plus_inference(test_muscle_dataset, deeplabv3plus_save_path, device)
-    except Exception as e:
-        print(e)
-        print('This training sessions failed')
+    # try:
+    #     # deeplabv3plus_writer = f"runs/DeepLabV3P_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+    #     # deeplabv3plus_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+    #     # deeplabv3p_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, 4, NUM_WORKERS, True, deeplabv3plus_writer, deeplabv3plus_save_path, 'BCE')
+    #     deeplabv3plus_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Muscle_2023-08-05_00.pth"
+    #     deeplabv3plus_inference(test_muscle_dataset, deeplabv3plus_save_path, device)
+    # except Exception as e:
+    #     print(e)
+    #     print('This training sessions failed')
     
     
         
@@ -103,15 +103,15 @@ if __name__ == "__main__":
     
 
     # Overfitting I think
-    # try:
-    #     # unet_writer = f"runs/Unet_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-    #     # unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-    #     # unet_run(bowel.train_bowel_dataset, bowel.val_bowel_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
-    #     unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Bowel_2023-08-05_08.pth"
-    #     unet_inference(bowel.val_bowel_dataset[:15], unet_save_path, device)
-    # except Exception as e:
-    #     print(e)
-    #     print('This training sessions failed')
+    try:
+        # unet_writer = f"runs/Unet_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+        # unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        # unet_run(bowel.train_bowel_dataset, bowel.val_bowel_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
+        unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Bowel_2023-08-05_08.pth"
+        unet_inference(bowel.val_bowel_dataset[:15], unet_save_path, device)
+    except Exception as e:
+        print(e)
+        print('This training sessions failed')
     
     # Trash
     # try:

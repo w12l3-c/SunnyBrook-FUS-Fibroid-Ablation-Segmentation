@@ -13,7 +13,7 @@ from transformers import Trainer, TrainingArguments
 
 from tqdm.auto import tqdm
 
-# ---------------------- Early Stopping ---------------------- #
+# ==================== Early Stopping ==================== #
 class EarlyStopper:
     def __init__(self, patience=1, min_delta=0):
         self.patience = patience
@@ -31,8 +31,8 @@ class EarlyStopper:
                 return True
     
 
-# ---------------------- For DeepLabV3 Only ---------------------- #
-# ---------------------- Training Step ---------------------- #
+# ==================== For DeepLabV3 Only ==================== #
+# ==================== Training Step ==================== #
 def deeplabv3_train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, device):
     model.train()
     train_loss = 0
@@ -67,7 +67,7 @@ def deeplabv3_train_step(model, dataloader, loss_fn, accuracy, optimizer, schedu
     return train_loss, train_acc
 
 
-# ---------------------- Validation Step ---------------------- #
+# ==================== Validation Step ==================== #
 def deeplabv3_val_step(model, dataloader, loss_fn, accuracy, device):
     model.eval()
     val_loss = 0
@@ -98,7 +98,7 @@ def deeplabv3_val_step(model, dataloader, loss_fn, accuracy, device):
     return val_loss, val_acc
 
 
-# ---------------------- Training Loop ---------------------- #
+# ==================== Training Loop ==================== #
 def deeplabv3_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy, optimizer, scheduler, device, epochs=10, writer=None):
     results = { "train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
     best_acc = 0
@@ -134,8 +134,8 @@ def deeplabv3_train_model(model, train_dataloader, val_dataloader, loss_fn, accu
     return best_model, results
 
 
-# ---------------------- For UNet and Other Models Only ---------------------- #
-# ---------------------- Training Step ---------------------- #
+# ==================== For UNet and Other Models Only ==================== #
+# ==================== Training Step ==================== #
 def unet_train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device):
     model.train()
     train_loss = 0
@@ -171,7 +171,7 @@ def unet_train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, 
     return train_loss, train_acc
 
 
-# ---------------------- Validation Step ---------------------- #
+# ==================== Validation Step ==================== #
 def unet_val_step(model, dataloader, loss_fn, accuracy, weight_fn, device):
     model.eval()
     val_loss = 0
@@ -203,7 +203,7 @@ def unet_val_step(model, dataloader, loss_fn, accuracy, weight_fn, device):
     return val_loss, val_acc
 
 
-# ---------------------- Training Loop ---------------------- #
+# ==================== Training Loop ==================== #
 def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device, epochs=10, writer=None):
     results = { "train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
     
@@ -244,7 +244,7 @@ def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy,
     return best_model, results
 
 
-
+# ==================== For Beit3 Only ==================== #
 # Need testing first
 def beit3_train_model(model, train_dataset, val_dataset, compute_metrics):
     training_args = TrainingArguments(

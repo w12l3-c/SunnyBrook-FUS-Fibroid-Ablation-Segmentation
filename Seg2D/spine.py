@@ -20,7 +20,8 @@ from save_load import *
 from train import deeplabv3_train_model, unet_train_model   
 
 from models import DeepLabV3, Unet, Unetpp
-
+from model_run_fn import deeplabv3_run, unet_run
+from model_inference_fn import unet_inference
 
 # This will be just segmenting spine (1 class) -> Binary Segmentation Task
 
