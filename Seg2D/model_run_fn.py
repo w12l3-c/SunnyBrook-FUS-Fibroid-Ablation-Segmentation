@@ -210,8 +210,8 @@ def deeplabv3p_run(train_dataset, val_dataset, device, epochs, batch_size, num_w
     flip = 0.3 if axis == 'Sagittal' else 0.0
     transform = DeepLabV3plus.prepare_transform(flip)
     loss_fn = DeepLabV3plus.prepare_loss(loss)
-    optimizer = DeepLabV3plus.prepare_optimizer(model)
-    scheduler = DeepLabV3plus.prepare_scheduler(optimizer, option='AdamW')
+    optimizer = DeepLabV3plus.prepare_optimizer(model, option='AdamW')
+    scheduler = DeepLabV3plus.prepare_scheduler(optimizer)
     
     # Prepare train and test dataloader
     if len(train_dataset)%batch_size == 1 or len(val_dataset)%batch_size == 1:
@@ -266,8 +266,8 @@ def fpn_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers,
     flip = 0.3 if axis == 'Sagittal' else 0.0
     transform = FPN.prepare_transform(flip)
     loss_fn = FPN.prepare_loss(loss)
-    optimizer = FPN.prepare_optimizer(model)
-    scheduler = FPN.prepare_scheduler(optimizer, option='AdamW')
+    optimizer = FPN.prepare_optimizer(model, option='AdamW')
+    scheduler = FPN.prepare_scheduler(optimizer)
     
     # Prepare train and test dataloader
     if len(train_dataset)%batch_size == 1 or len(val_dataset)%batch_size == 1:
