@@ -20,7 +20,8 @@ from save_load import *
 from train import deeplabv3_train_model, unet_train_model   
 
 from models import DeepLabV3, Unet, Unetpp
-
+from model_inference_fn import deeplabv3_inference, unet_inference
+from model_run_fn import deeplabv3_run, unet_run, unetpp_run
 
 # This will be just segmenting skin (1 class) -> Binary Segmentation Task
 
@@ -56,6 +57,32 @@ train_skin_dataset = convert_to_PIL(train_skin_dataset)
 val_skin_dataset = convert_to_PIL(val_skin_dataset)
 test_skin_dataset = convert_to_PIL(test_skin_dataset)
 
+
+
+if __name__ == "__main__":
+    try:
+        unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
+        unet_writer_path = f"runs/Unet_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
+        unet_run(train_skin_dataset, val_skin_dataset, unet_save_path, unet_writer_path, device, display=False)
+    except Exception as e:
+        print(e)
+        print('Session Crashed')
+    
+    try:
+        unet_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_2023-08-03_14:03:42.pth"
+        unet_inference(test_skin_dataset, unet_path, device, display=False)
+    except Exception as e:
+        print(e)
+        print('Session Crashed')
+
+    
+ 
+    
+    
+    
+    
+"""
+Legacy Code
 # ------------------- Training ------------------- #
 def deeplabv3_run():
     # Prepare model, transformation, loss function, optimizer, scheduler
@@ -170,17 +197,17 @@ def unet_run():
     print(f"Model saved at {save_path}")
     
     
-def unet_inference():
-    # Set Seed
-    torch.manual_seed(42)
+# def unet_inference():
+#     # Set Seed
+#     torch.manual_seed(42)
     
-    saved_model = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_2023-08-03_14:03:42.pth"
-    model = Unet.auto_UNET(in_channels=3, num_classes=2)
-    model = load_model_torch(model, saved_model)
-    model = model.to(device)
+#     saved_model = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_2023-08-03_14:03:42.pth"
+#     model = Unet.auto_UNET(in_channels=3, num_classes=2)
+#     model = load_model_torch(model, saved_model)
+#     model = model.to(device)
     
-    # Run Inference function
-    Unet.predict_UNET(model, test_skin_dataset, device)
+#     # Run Inference function
+#     Unet.predict_UNET(model, test_skin_dataset, device)
     
     
 def unetpp_run(): 
@@ -234,16 +261,4 @@ def unetpp_inference():
     
     # Run Inference function
     Unetpp.predict_UNETPP(model, train_skin_dataset[:10], device)
-    
-
-if __name__ == "__main__":
-    # deeplabv3_run()
-    # deeplabv3_inference()
-    
-    # unet_run()
-    unet_inference()
-    
-    # unetpp_run()
-    # unetpp_inference()
-    
-    
+"""
