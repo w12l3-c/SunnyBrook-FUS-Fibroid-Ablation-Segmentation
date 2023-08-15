@@ -177,7 +177,7 @@ def predict(model, dataset, device, img_size):
             
             yield (image, mask, pred, (acc_iou, acc_basic, acc_dice), inference_time)
             
-def predict_UNET(model, dataset, device, img_size=(320, 320), display=True):
+def predict_DEEPLABV3P(model, dataset, device, img_size=(320, 320), display=True):
     generator = predict(model, dataset, device, img_size)
     if display:
         save = input('Save predictions? (y/n): ')
