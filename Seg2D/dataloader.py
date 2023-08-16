@@ -60,7 +60,7 @@ def convert_to_PIL(pairs, img_size=(320, 320)):
         
         file = pydicom.dcmread(img_path)
         img = file.pixel_array
-        # pixel_spaceing = file.PixelSpacing
+        # pixel_spaceing = file.PixelSpacing    # Coronal doesn't have this attribute
         
         if img.shape not in image_sizes:
             image_sizes.append(img.shape)
@@ -78,9 +78,10 @@ def convert_to_PIL(pairs, img_size=(320, 320)):
         # img = ImageOps.equalize(img)
         # img = gamma_correction_pil(img, gamma=1.5)
         
-        mask = Image.open(mask)
-        mask = mask.resize(img_size)
-        mask = mask.convert("L")
+        if mask is not None:
+            mask = Image.open(mask)
+            mask = mask.resize(img_size)
+            mask = mask.convert("L")
         
         pair['img'] = img
         pair['mask'] = mask
@@ -108,7 +109,8 @@ class PatientDataset2D(torch.utils.data.Dataset):
             img = self.transform(img)
             img = normalization(img)
             
-            mask = self.transform(mask)
+            if mask is not None:
+                mask = self.transform(mask)
             
             return img, mask
         else:
