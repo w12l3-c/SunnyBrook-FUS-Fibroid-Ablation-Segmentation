@@ -62,6 +62,7 @@ class Patient:
         
         # Colour palette for multi-class segmentation
         self.colour_label = {'Spine': (35, 132, 250), 'Bowel': (14, 240, 56), 'Muscle': (214, 51, 36), 'Skin': (240, 170, 31), 'hip_L': (173, 20, 250), 'hip_R': (131, 20, 250)}
+        self.colour_list = [(35, 132, 250), (14, 240, 56), (214, 51, 36), (240, 170, 31), (173, 20, 250), (131, 20, 250)]
         
         # Sagittal and coronal spacing
         self.sagittal_spacing = [0.9375, 0.9375]
@@ -149,6 +150,86 @@ class Patient:
         self.muscle_mask = [os.path.join(self.muscle_dir, x) for x in self.muscle_listdir]
         self.muscle_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir[start-1:end]]
 
+    def inference_seg(self):
+        # Sagittal Dataset
+        self.sagittal_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir]
+
+        # Coronal Dataset
+        self.coronal_img = [os.path.join(self.coronal, x) for x in self.coronal_listdir]
+
+    def multilabel_seg(self):
+        # Multilabel masks directory
+        smallest_index = 10000
+        largest_index = 0
+        
+        sag_list = ['Bowel', 'Spine', 'Skin', 'Muscle']
+        cor_list = ['hip_L', 'hip_R']
+        
+        # Sagittal
+        for region in sag_list:
+            region_dir = os.path.join(self.mask_dir, region)
+            if os.path.exists(region_dir):
+                region_listdir = sorted(os.listdir(region_dir))
+            
+                start = int(re.findall(r'\d+', region_listdir[0])[0])
+                end = int(re.findall(r'\d+', region_listdir[-1])[0])
+                
+                if start < smallest_index:
+                    smallest_index = start
+                
+                if end > largest_index:
+                    largest_index = end
+        
+        self.multilabel_sag_mask = []
+        self.multilabel_sag_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir[smallest_index-1:largest_index]]
+        
+        
+        for i in range(smallest_index, largest_index+1):
+            mask_stack = []
+            for region in sag_list:
+                region_dir = os.path.join(self.mask_dir, region)
+                if os.path.exists(region_dir):
+                    region_listdir = sorted(os.listdir(region_dir))
+                    for path in region_listdir:
+                        if int(re.findall(r'\d+', path)[0]) == i:
+                            mask_stack.append(os.path.join(region_dir, path))
+            self.multilabel_sag_mask.append(mask_stack)
+        
+        # Coronal 
+        smallest_index = 10000
+        largest_index = 0
+        
+        for region in cor_list:
+            region_dir = os.path.join(self.mask_dir, region)
+            if os.path.exists(region_dir):
+                region_listdir = sorted(os.listdir(region_dir))
+            
+                start = int(re.findall(r'\d+', region_listdir[0])[0])
+                end = int(re.findall(r'\d+', region_listdir[-1])[0])
+                
+                if start < smallest_index:
+                    smallest_index = start
+                
+                if end > largest_index:
+                    largest_index = end
+        
+        self.multilabel_cor_mask = []
+        self.multilabel_cor_img = [os.path.join(self.coronal, x) for x in self.coronal_listdir[smallest_index-1:largest_index]]
+        
+        for i in range(smallest_index, largest_index+1):
+            mask_stack = []
+            for region in cor_list:
+                region_dir = os.path.join(self.mask_dir, region)
+                if os.path.exists(region_dir):
+                    region_listdir = sorted(os.listdir(region_dir))
+                    for path in region_listdir:
+                        if int(re.findall(r'\d+', path)[0]) == i:
+                            mask_stack.append(os.path.join(region_dir, path))
+            self.multilabel_cor_mask.append(mask_stack)
+        
+        # print(f"Multilabel Sag Mask: {self.multilabel_sag_mask[50:100]}")
+        # print(f"Multilabel Cor Mask: {self.multilabel_cor_mask[:3]}")
+        
     def prepare(self):
         # Run all segmentation file paths functions above base on the avaliable folder in patient
         # ie. Spine masks is available in all patients, but Muscle is not
@@ -164,6 +245,9 @@ class Patient:
             self.skin_seg()
         if 'Muscle' in self.mask_listdir:
             self.muscle_seg()
+            
+        self.inference_seg()
+        self.multilabel_seg()
             
             
 # ------------------ Create Patient List ------------------ #
@@ -242,6 +326,36 @@ def get_skin(patient_list):
                 mask = patient.skin_mask[index]
                 path_list.append({'img':img, 'mask':mask})
         
+    return path_list
+
+def get_inference(patient_list):
+    path_list_sagittal = []
+    path_list_coronal = []
+    for patient in patient_list:
+        for index, img in enumerate(patient.sagittal_img):
+            mask = None
+            path_list_sagittal.append({'img':img, 'mask':mask})
+    for patient in patient_list:
+        for index, img in enumerate(patient.coronal_img):
+            mask = None
+            path_list_coronal.append({'img':img, 'mask':mask})
+            
+    return path_list_sagittal, path_list_coronal
+    
+def get_multilabel_coronal(patient_list):
+    path_list = []
+    for patient in patient_list:
+        for index, img in enumerate(patient.coronal_img):
+            mask = None
+            path_list.append({'img':img, 'mask':mask})
+    return path_list
+
+def get_multilabel_sagittal(patient_list):
+    path_list = []
+    for patient in patient_list:
+        for index, img in enumerate(patient.sagittal_img):
+            mask = None
+            path_list.append({'img':img, 'mask':mask})
     return path_list
 
 # ------------------ Test ------------------ #
