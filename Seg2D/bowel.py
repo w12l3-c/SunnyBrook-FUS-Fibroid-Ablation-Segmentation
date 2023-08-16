@@ -1,3 +1,12 @@
+# ======================================================================== #
+# File Description:
+# ------------------
+# This file is used for train or inferencing model on the Bowel Dataset
+# It is a binary segmentation task
+# Comment out the training or inference code to run the other
+# ======================================================================== #
+
+# =================== Imports =================== #
 import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
