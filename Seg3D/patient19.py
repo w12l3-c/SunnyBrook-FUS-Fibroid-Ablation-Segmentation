@@ -30,6 +30,9 @@ example_dicom = pydicom.dcmread(example_dicom)
 exmaple_dicom2 = patient_19.hipr_img[20]
 example_dicom2 = pydicom.dcmread(exmaple_dicom2)
 
+for attr in dir(example_dicom):
+    print(attr)
+
 print(f"Example dicom")
 print(example_dicom.ImageOrientationPatient)    # Unit vector for P and S
 print(example_dicom.ImagePositionPatient)   # X Y Z of L

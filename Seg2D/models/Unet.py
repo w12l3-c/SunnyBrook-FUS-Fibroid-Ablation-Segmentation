@@ -302,7 +302,8 @@ def predict(model, dataset, device, img_size):
             pred = pred.squeeze().cpu().numpy() * 255
             pred = cv2.resize(pred, img_size)
             
-            mask = mask.resize(img_size)
+            if mask is not None:
+                mask = mask.resize(img_size)
             
             inference_time = end_time - start_time
             
@@ -324,36 +325,36 @@ def predict_UNET(model, dataset, device, img_size=(320, 320), display=True):
         for i, prediction in enumerate(generator):
             image, mask, pred, acc, time = prediction
             acc_iou, acc_basic, acc_dice = acc
-            image = gamma_correction_pil(image, gamma=1.5)  
+            # image = gamma_correction_pil(image, gamma=1.5)  
             
-            mask_edge = cv2.Canny(np.asarray(mask), 100, 200)
-            pred_edge = cv2.Canny(pred.astype(np.uint8), 100, 200)
-            
-            mask_edge_red = np.zeros((mask_edge.shape[0], mask_edge.shape[1], 3))
-            mask_edge_red[mask_edge > 0] = [255, 0, 0]
-            mask_edge_red = mask_edge_red.astype(np.uint8)
-            pred_edge_green = np.zeros((pred_edge.shape[0], pred_edge.shape[1], 3))
-            pred_edge_green[pred_edge > 0] = [0, 255, 0]
-            pred_edge_green = pred_edge_green.astype(np.uint8)
-            
-            
-            edge_overlay = mask_edge_red + pred_edge_green
-            edge_overlay = edge_overlay.astype(np.uint8)
-            
-            mask_red = np.zeros((mask.size[1], mask.size[0], 3))
-            pred_green = np.zeros((mask.size[1], mask.size[0], 3))
-            
-            mask_map = np.asarray(mask) > 128
-            pred_map = pred > 0.5
-            
-            mask_red[mask_map] = [255, 0, 0]
-            pred_green[pred_map] = [0, 255, 0]
-            
-            mask_red = mask_red.astype(np.uint8)
-            pred_green = pred_green.astype(np.uint8)
-            
-            mask_overlay = mask_red + pred_green
-            mask_overlay = mask_overlay.astype(np.uint8)
+            if mask is not None:
+                mask_edge = cv2.Canny(np.asarray(mask), 100, 200)
+                pred_edge = cv2.Canny(pred.astype(np.uint8), 100, 200)
+                
+                mask_edge_red = np.zeros((mask_edge.shape[0], mask_edge.shape[1], 3))
+                mask_edge_red[mask_edge > 0] = [255, 0, 0]
+                mask_edge_red = mask_edge_red.astype(np.uint8)
+                pred_edge_green = np.zeros((pred_edge.shape[0], pred_edge.shape[1], 3))
+                pred_edge_green[pred_edge > 0] = [0, 255, 0]
+                pred_edge_green = pred_edge_green.astype(np.uint8)
+                
+                edge_overlay = mask_edge_red + pred_edge_green
+                edge_overlay = edge_overlay.astype(np.uint8)
+                
+                mask_red = np.zeros((mask.size[1], mask.size[0], 3))
+                pred_green = np.zeros((mask.size[1], mask.size[0], 3))
+                
+                mask_map = np.asarray(mask) > 128
+                pred_map = pred > 0.5
+                
+                mask_red[mask_map] = [255, 0, 0]
+                pred_green[pred_map] = [0, 255, 0]
+                
+                mask_red = mask_red.astype(np.uint8)
+                pred_green = pred_green.astype(np.uint8)
+                
+                mask_overlay = mask_red + pred_green
+                mask_overlay = mask_overlay.astype(np.uint8)
             
             fig, ax = plt.subplots(2,3, figsize=(20,15))
             
@@ -412,14 +413,14 @@ def predict_UNET(model, dataset, device, img_size=(320, 320), display=True):
             
         fig, ax = plt.subplots(2, 2, figsize=(20,10))
         
-        ax[0][0].set_title(f'Accuracy (IOU) | Median:{np.mean(np.array(acc_ious))*100:.4f}')
+        ax[0][0].set_title(f'Accuracy (IOU) | Median:{np.median(np.array(acc_ious))*100:.4f}')
         ax[0][0].plot(acc_ious)
-        ax[0][1].set_title(f'Accuracy (Basic) | Median:{np.mean(np.array(acc_basics))*100:.4f}')
+        ax[0][1].set_title(f'Accuracy (Basic) | Median:{np.median(np.array(acc_basics))*100:.4f}')
         ax[0][1].plot(acc_basics)
-        ax[1][0].set_title(f'Accuracy (Dice) | Median:{np.mean(np.array(acc_dices))*100:.4f}')
+        ax[1][0].set_title(f'Accuracy (Dice) | Median:{np.median(np.array(acc_dices))*100:.4f}')
         ax[1][0].plot(acc_dices)
-        ax[1][1].set_title(f'Inference Time (s) | Median:{np.mean(np.array(times)):.4f}')
-        ax[1][1].plot(times)
+        ax[1][1].set_title(f'Inference Time (s) | Median:{np.median(np.array(times)):.4f}')
+        ax[1][1].plot(times[1:])
         
         plt.show()
             
