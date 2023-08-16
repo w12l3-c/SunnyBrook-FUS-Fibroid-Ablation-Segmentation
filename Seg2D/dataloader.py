@@ -91,6 +91,51 @@ def convert_to_PIL(pairs, img_size=(320, 320)):
     # print(image_sizes)
     return pairs
 
+def convert_to_PIL_multi(pairs, color_map, img_size=(320, 320)):
+    image_sizes = []
+    for pair in pairs:
+        img_path = pair["img"]
+        mask = pair["mask"]
+        
+        # The image format for different libraries:
+            # cv2 image is (height, width, channels)
+            # PIL image is (width, height) + mode
+            # Tensor is (channels, height, width)
+        
+        file = pydicom.dcmread(img_path)
+        img = file.pixel_array
+        
+        if img.shape not in image_sizes:
+            image_sizes.append(img.shape)
+        
+        img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+        img = cv2.equalizeHist(img.astype(np.uint8))
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        
+        img = Image.fromarray(img)
+        img = img.resize(img_size)
+        img = img.convert("RGB")
+        
+        if mask is not None:
+            mask = np.zeros((img_size[0], img_size[1], 3))
+            for path in mask:
+                m = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+                m = cv2.resize(m, img_size)
+                m_map = m > 10
+                
+                path_split = path.split("/")
+                region = path_split[-2]
+                color = color_map[region]
+                
+                mask[m_map] = color
+            
+            mask = Image.fromarray(mask.astype(np.uint8))
+            
+        pair['img'] = img
+        pair['mask'] = mask
+    
+    return pairs
+
 # ---------------------- Dataset & DataLoader ---------------------- #
 class PatientDataset2D(torch.utils.data.Dataset):
     def __init__(self, pairs, transform=None):
