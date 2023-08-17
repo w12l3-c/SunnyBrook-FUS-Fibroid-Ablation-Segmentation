@@ -26,7 +26,7 @@ from models import DeepLabV3, Unet, Unetpp, DeepLabV3plus, FPN, MAnet
 # The scipt with the parts name ex. spine.py will run these functions 
 
 
-def deeplabv3_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path):
+def deeplabv3_run(train_dataset, val_dataset, device, epochs, num_classes, batch_size, num_workers, pin_memory, writer_path, save_path):
     """
     Train the DeepLabV3 model and save the best model checkpoint.
     
@@ -35,6 +35,7 @@ def deeplabv3_run(train_dataset, val_dataset, device, epochs, batch_size, num_wo
         val_dataset (Dataset): Validation dataset.
         device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
         epochs (int): Number of training epochs.
+        num_classes (int): Number of classes.
         batch_size (int): Batch size for training.
         num_workers (int): Number of workers for data loading.
         pin_memory (bool): Whether to pin memory for DataLoader.
@@ -42,7 +43,7 @@ def deeplabv3_run(train_dataset, val_dataset, device, epochs, batch_size, num_wo
         save_path (str): Path to save the trained model checkpoint.
     """
     # Prepare model, transformation, loss function, optimizer, scheduler
-    model, transform, loss_fn, optimizer, scheduler = DeepLabV3.DeepLabV3(in_channels=3, num_classes=1, size='regular')
+    model, transform, loss_fn, optimizer, scheduler = DeepLabV3.DeepLabV3(in_channels=3, num_classes=num_classes, size='regular')
     model = model.to(device)
     
     # Prepare train and test dataloader
@@ -71,7 +72,7 @@ def deeplabv3_run(train_dataset, val_dataset, device, epochs, batch_size, num_wo
     print(f"Model saved at {save_path}")
     
     
-def unet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
+def unet_run(train_dataset, val_dataset, device, epochs, num_classes, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
     """
     Train the UNet model and save the best model checkpoint.
     
@@ -80,6 +81,7 @@ def unet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers
         val_dataset (Dataset): Validation dataset.
         device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
         epochs (int): Number of training epochs.
+        num_classes (int): Number of classes.
         batch_size (int): Batch size for training.
         num_workers (int): Number of workers for data loading.
         pin_memory (bool): Whether to pin memory for DataLoader.
@@ -92,7 +94,7 @@ def unet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers
     torch.manual_seed(42)
     
     # Prepare model, transformation, loss function, optimizer, scheduler
-    model = Unet.auto_UNET(in_channels=3, num_classes=2)
+    model = Unet.auto_UNET(in_channels=3, num_classes=num_classes)
     model = model.to(device)
     
     flip = 0.3 if axis == 'Sagittal' else 0.0
@@ -127,7 +129,7 @@ def unet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers
     print(f"Model saved at {save_path}")
     
 
-def unetpp_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
+def unetpp_run(train_dataset, val_dataset, device, epochs, num_classes, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
     """
     Train the UNet++ model and save the best model checkpoint.
     
@@ -136,6 +138,7 @@ def unetpp_run(train_dataset, val_dataset, device, epochs, batch_size, num_worke
         val_dataset (Dataset): Validation dataset.
         device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
         epochs (int): Number of training epochs.
+        num_classes (int): Number of classes.
         batch_size (int): Batch size for training.
         num_workers (int): Number of workers for data loading.
         pin_memory (bool): Whether to pin memory for DataLoader.
@@ -148,7 +151,7 @@ def unetpp_run(train_dataset, val_dataset, device, epochs, batch_size, num_worke
     torch.manual_seed(42)
     
     # Prepare model, transformation, loss function, optimizer, scheduler
-    model = Unetpp.auto_UNETPP(in_channels=3, num_classes=2)
+    model = Unetpp.auto_UNETPP(in_channels=3, num_classes=num_classes)
     model = model.to(device)
     
     flip = 0.3 if axis == 'Sagittal' else 0.0
@@ -183,7 +186,7 @@ def unetpp_run(train_dataset, val_dataset, device, epochs, batch_size, num_worke
     print(f"Model saved at {save_path}")
     
     
-def deeplabv3p_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
+def deeplabv3p_run(train_dataset, val_dataset, device, epochs, num_classes, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
     """
     Train the DeepLabV3+ model and save the best model checkpoint.
     
@@ -192,6 +195,7 @@ def deeplabv3p_run(train_dataset, val_dataset, device, epochs, batch_size, num_w
         val_dataset (Dataset): Validation dataset.
         device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
         epochs (int): Number of training epochs.
+        num_classes (int): Number of classes.
         batch_size (int): Batch size for training.
         num_workers (int): Number of workers for data loading.
         pin_memory (bool): Whether to pin memory for DataLoader.
@@ -204,7 +208,7 @@ def deeplabv3p_run(train_dataset, val_dataset, device, epochs, batch_size, num_w
     torch.manual_seed(42)
     
     # Prepare model, transformation, loss function, optimizer, scheduler
-    model = DeepLabV3plus.auto_DEEPLABV3P(in_channels=3, num_classes=2)
+    model = DeepLabV3plus.auto_DEEPLABV3P(in_channels=3, num_classes=num_classes)
     model = model.to(device)
     
     flip = 0.3 if axis == 'Sagittal' else 0.0
@@ -239,7 +243,7 @@ def deeplabv3p_run(train_dataset, val_dataset, device, epochs, batch_size, num_w
     print(f"Model saved at {save_path}")
     
     
-def fpn_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
+def fpn_run(train_dataset, val_dataset, device, epochs, num_classes, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
     """
     Train the FPN model and save the best model checkpoint.
     
@@ -248,6 +252,7 @@ def fpn_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers,
         val_dataset (Dataset): Validation dataset.
         device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
         epochs (int): Number of training epochs.
+        num_classes (int): Number of classes.
         batch_size (int): Batch size for training.
         num_workers (int): Number of workers for data loading.
         pin_memory (bool): Whether to pin memory for DataLoader.
@@ -260,7 +265,7 @@ def fpn_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers,
     torch.manual_seed(42)
     
     # Prepare model, transformation, loss function, optimizer, scheduler
-    model = FPN.auto_FPN(in_channels=3, num_classes=2)
+    model = FPN.auto_FPN(in_channels=3, num_classes=num_classes)
     model = model.to(device)
     
     flip = 0.3 if axis == 'Sagittal' else 0.0
@@ -295,7 +300,7 @@ def fpn_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers,
     print(f"Model saved at {save_path}")
     
     
-def manet_run(train_dataset, val_dataset, device, epochs, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
+def manet_run(train_dataset, val_dataset, device, epochs, num_classes, batch_size, num_workers, pin_memory, writer_path, save_path, loss='BCE', axis='Sagittal'): 
     """
     Train the MAnet model and save the best model checkpoint.
     
@@ -304,6 +309,7 @@ def manet_run(train_dataset, val_dataset, device, epochs, batch_size, num_worker
         val_dataset (Dataset): Validation dataset.
         device (torch.device): Device for training (e.g., 'cuda' or 'cpu').
         epochs (int): Number of training epochs.
+        num_classes (int): Number of classes.
         batch_size (int): Batch size for training.
         num_workers (int): Number of workers for data loading.
         pin_memory (bool): Whether to pin memory for DataLoader.
@@ -316,7 +322,7 @@ def manet_run(train_dataset, val_dataset, device, epochs, batch_size, num_worker
     torch.manual_seed(42)
     
     # Prepare model, transformation, loss function, optimizer, scheduler
-    model = MAnet.auto_MANET(in_channels=3, num_classes=2)
+    model = MAnet.auto_MANET(in_channels=3, num_classes=num_classes)
     model = model.to(device)
     
     flip = 0.3 if axis == 'Sagittal' else 0.0
