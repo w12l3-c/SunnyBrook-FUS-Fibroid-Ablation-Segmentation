@@ -423,5 +423,4 @@ def predict_UNET(model, dataset, device, img_size=(320, 320), display=True):
         ax[1][1].plot(times[1:])
         
         plt.show()
-            
         
