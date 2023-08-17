@@ -23,6 +23,7 @@ from models import DeepLabV3, Unet, Unetpp, DeepLabV3plus, FPN, MAnet
 
 
 def deeplabv3_inference(test_dataset, model_path, device):
+    # This is not working currently
     # Prepare dataset
     dataset = test_dataset
     
@@ -63,11 +64,11 @@ def deeplabv3_inference(test_dataset, model_path, device):
     plt.imshow(r, alpha=0.5)
     
     
-def unet_inference(test_dataset, model_path, device, img_size=(320, 320), display=True):
+def unet_inference(test_dataset, model_path, device, num_classes=2, img_size=(320, 320), display=True):
     # Set Seed
     torch.manual_seed(42)
     
-    model = Unet.auto_UNET(in_channels=3, num_classes=2)
+    model = Unet.auto_UNET(in_channels=3, num_classes=num_classes)
     model = load_model_torch(model, model_path)
     model = model.to(device)
     
@@ -75,11 +76,11 @@ def unet_inference(test_dataset, model_path, device, img_size=(320, 320), displa
     Unet.predict_UNET(model, test_dataset, device, img_size, display)
     
     
-def unetpp_inference(test_dataset, model_path, device, img_size=(320, 320)):
+def unetpp_inference(test_dataset, model_path, device, num_classes=2, img_size=(320, 320)):
     # Set Seed
     torch.manual_seed(42)
     
-    model = Unetpp.auto_UNETPP(in_channels=3, num_classes=2)
+    model = Unetpp.auto_UNETPP(in_channels=3, num_classes=num_classes)
     model = load_model_torch(model, model_path)
     model = model.to(device)
     
@@ -87,24 +88,36 @@ def unetpp_inference(test_dataset, model_path, device, img_size=(320, 320)):
     Unetpp.predict_UNETPP(model, test_dataset, device, img_size)
     
     
-def deeplabv3plus_inference(test_dataset, model_path, device, img_size=(320, 320)):
+def deeplabv3plus_inference(test_dataset, model_path, device, num_classes=2, img_size=(320, 320)):
     # Set Seed
     torch.manual_seed(42)
     
-    model = DeepLabV3plus.auto_DEEPLABV3P(in_channels=3, num_classes=2)
+    model = DeepLabV3plus.auto_DEEPLABV3P(in_channels=3, num_classes=num_classes)
     model = load_model_torch(model, model_path)
     model = model.to(device)
     
     # Run Inference function
     DeepLabV3plus.predict_DEEPLABV3P(model, test_dataset, device, img_size)
     
-def fpn_inference(test_dataset, model_path, device, img_size=(320, 320)):
+def fpn_inference(test_dataset, model_path, device, num_classes=2, img_size=(320, 320)):
     # Set Seed
     torch.manual_seed(42)
     
-    model = FPN.auto_FPN(in_channels=3, num_classes=2)
+    model = FPN.auto_FPN(in_channels=3, num_classes=num_classes)
     model = load_model_torch(model, model_path)
     model = model.to(device)
     
     # Run Inference function
     FPN.predict_FPN(model, test_dataset, device, img_size)
+    
+def manet_inference(test_dataset, model_path, device, num_classes=2, img_size=(320, 320)):
+    # Set Seed
+    torch.manual_seed(42)
+    
+    model = MAnet.auto_MANET(in_channels=3, num_classes=num_classes)
+    model = load_model_torch(model, model_path)
+    model = model.to(device)
+    
+    # Run Inference function
+    MAnet.predict_MANET(model, test_dataset, device, img_size)
+    
