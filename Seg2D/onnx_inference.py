@@ -1,3 +1,16 @@
+# ======================================================================== #
+# File Description:
+# ------------------
+# This is for when you want even faster inference time 
+# Which is converting the tensorflow or pytorch model in onnx model
+#
+# It doesn't show that much improve in this case as it usually 
+# see significant difference in LLM and Large Diffusion model
+#
+# I have NOT Debug this code yet
+# ======================================================================== #
+
+# =================== Imports =================== #
 import cv2
 import numpy as np
 import torch
