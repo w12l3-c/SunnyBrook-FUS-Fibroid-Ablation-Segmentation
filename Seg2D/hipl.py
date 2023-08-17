@@ -72,7 +72,7 @@ if __name__ == "__main__":
     #     unet_writer = f"runs/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
     #     unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
     #     # Traing Model
-    #     unet_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
+    #     unet_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
     # except Exception as e:
     #     print(e)
     #     print('Training Session Crashed')
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     try:
         deeplabv3p_writer = f"runs/DeepLabV3P_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
         deeplabv3p_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-        deeplabv3p_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, deeplabv3p_writer, deeplabv3p_save_path, 'BCE')
+        deeplabv3p_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, deeplabv3p_writer, deeplabv3p_save_path, 'BCE')
     except Exception as e:
         print(e)
         print('This training sessions failed')
