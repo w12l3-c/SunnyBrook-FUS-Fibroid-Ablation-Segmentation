@@ -73,7 +73,7 @@ if __name__ == "__main__":
     try:
         unet_writer = f"runs/Unet_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
         unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-        unet_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
+        unet_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
     except Exception as e:
         print(e)
         print('This training sessions failed')
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     # try:
     #     # unetpp_writer = f"runs/UnetPP_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
     #     # unetpp_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/UnetP_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-    #     # unetpp_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, 4, NUM_WORKERS, True, unetpp_writer, unetpp_save_path, 'BCE')
+    #     # unetpp_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unetpp_writer, unetpp_save_path, 'BCE')
     #     unetpp_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/UnetPP_Muscle_2023-08-04_16.pth"
     #     unetpp_inference(test_muscle_dataset, unetpp_save_path, device)
     # except Exception as e:
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     # try:
     #     # deeplabv3plus_writer = f"runs/DeepLabV3P_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
     #     # deeplabv3plus_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-    #     # deeplabv3p_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, 4, NUM_WORKERS, True, deeplabv3plus_writer, deeplabv3plus_save_path, 'BCE')
+    #     # deeplabv3p_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, deeplabv3plus_writer, deeplabv3plus_save_path, 'BCE')
     #     deeplabv3plus_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Muscle_2023-08-05_00.pth"
     #     deeplabv3plus_inference(test_muscle_dataset, deeplabv3plus_save_path, device)
     # except Exception as e:
