@@ -345,16 +345,16 @@ def get_inference(patient_list):
 def get_multilabel_coronal(patient_list):
     path_list = []
     for patient in patient_list:
-        for index, img in enumerate(patient.coronal_img):
-            mask = None
+        for index, img in enumerate(patient.multilabel_cor_img):
+            mask = patient.multilabel_cor_mask[index]
             path_list.append({'img':img, 'mask':mask})
     return path_list
 
 def get_multilabel_sagittal(patient_list):
     path_list = []
     for patient in patient_list:
-        for index, img in enumerate(patient.sagittal_img):
-            mask = None
+        for index, img in enumerate(patient.multilabel_sag_img):
+            mask = patient.multilabel_sag_mask[index]
             path_list.append({'img':img, 'mask':mask})
     return path_list
 
