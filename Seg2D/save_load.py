@@ -1,3 +1,15 @@
+# =============================================================================
+# File Description:
+# ------------------
+# Pytorch:
+# This file is contains the function to save the model.state_dict as a pth file
+# and load the model.state_dict from a pth file 
+#
+# Tensorflow:
+# Save and load tensorlfow model
+# =============================================================================
+
+# =================== Imports =================== #
 import torch
 import torch.nn as nn
 
