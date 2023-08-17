@@ -48,8 +48,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 torch.manual_seed(42)
 
 # Define which directories are part of the dataset
-train_path_list = listsiemens[:2] # + listbones[1:] + listlowres + listarrayus[1:]
-test_path_list = [listsiemens[-1]] # + [listarrayus[0]] + [listbones[0]]
+train_path_list = listsiemens[:9] + listbones[1:] + listlowres + listarrayus[1:]
+test_path_list = [listsiemens[-1]] + [listarrayus[0]] + [listbones[0]]
 
 # Create a list of patient class objects
 train_patients = create_patient_list(path_list=train_path_list)
@@ -71,7 +71,7 @@ if __name__ == "__main__":
 #     try:
 #         deeplabv3_writer = f"runs/DeepLabV3_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
 #         deeplabv3_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-#         deeplabv3_run(train_spine_dataset, val_spine_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, deeplabv3_writer, deeplabv3_save_path, 'BCE')
+#         deeplabv3_run(train_spine_dataset, val_spine_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, deeplabv3_writer, deeplabv3_save_path, 'BCE')
 #     except Exception as e:
 #         print(e)
 #         print('This training sessions failed')
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     # try:
     #     unet_writer = f"runs/Unet_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
     #     unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-    #     unet_run(train_spine_dataset, val_spine_dataset, device, NUM_EPOCHS, 8, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
+    #     unet_run(train_spine_dataset, val_spine_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
     # except Exception as e:
     #     print(e)
     #     print('This training sessions failed')
@@ -96,7 +96,7 @@ if __name__ == "__main__":
 #     try:
 #         # deeplabv3plus_writer = f"runs/DeepLabV3P_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
 #         # deeplabv3plus_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-#         # deeplabv3p_run(spine.train_spine_dataset, spine.val_spine_dataset, device, NUM_EPOCHS, 4, NUM_WORKERS, True, deeplabv3plus_writer, deeplabv3plus_save_path, 'BCE')
+#         # deeplabv3p_run(train_spine_dataset, val_spine_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, deeplabv3plus_writer, deeplabv3plus_save_path, 'BCE')
 #         deeplabv3plus_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Spine_2023-08-05_04.pth"
 #         deeplabv3plus_inference(test_spine_dataset, deeplabv3plus_save_path, device)
 #     except Exception as e:
