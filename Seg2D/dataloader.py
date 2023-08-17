@@ -97,11 +97,6 @@ def convert_to_PIL_multi(pairs, color_map, img_size=(320, 320)):
         img_path = pair["img"]
         mask = pair["mask"]
         
-        # The image format for different libraries:
-            # cv2 image is (height, width, channels)
-            # PIL image is (width, height) + mode
-            # Tensor is (channels, height, width)
-        
         file = pydicom.dcmread(img_path)
         img = file.pixel_array
         
@@ -117,19 +112,21 @@ def convert_to_PIL_multi(pairs, color_map, img_size=(320, 320)):
         img = img.convert("RGB")
         
         if mask is not None:
-            mask = np.zeros((img_size[0], img_size[1], 3))
+            mask_canva = np.zeros((img_size[0], img_size[1], 3))
+            
             for path in mask:
                 m = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
                 m = cv2.resize(m, img_size)
-                m_map = m > 10
+                m_map = m > 128
                 
                 path_split = path.split("/")
                 region = path_split[-2]
                 color = color_map[region]
                 
-                mask[m_map] = color
+                mask_canva[m_map] = color
             
-            mask = Image.fromarray(mask.astype(np.uint8))
+            mask = Image.fromarray(mask_canva.astype(np.uint8))
+            mask = mask.resize(img_size)
             
         pair['img'] = img
         pair['mask'] = mask
