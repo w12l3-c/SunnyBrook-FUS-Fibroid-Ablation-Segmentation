@@ -134,6 +134,15 @@ def convert_to_PIL_multi(pairs, color_map, img_size=(320, 320)):
     
     return pairs
 
+def display_multi_mask(mask, id2label, color_map):
+    mask = np.asarray(mask)
+    mask_canva = np.zeros((mask.shape[0], mask.shape[1], 3))
+    for i in range(len(id2label)):
+        label = id2label[i]
+        color = color_map[label]
+        mask_canva[mask == i] = color
+    return Image.fromarray(mask_canva.astype(np.uint8))
+        
 # ===================== Dataset & DataLoader ===================== #
 class PatientDataset2D(torch.utils.data.Dataset):
     def __init__(self, pairs, transform=None):
