@@ -5,7 +5,7 @@
 # =============================================================================
 
 # =================== Imports =================== #
-from transformers import AutoImageProcessor, BeitForSemanticSegmentation, TrainingArguments, Trainer
+from transformers import AutoImageProcessor, BeitForSemanticSegmentation, BeitFeatureExtractor, TrainingArguments, Trainer
 import evaluate
 from datasets import Dataset, DatasetDict
 
@@ -25,9 +25,10 @@ import torchvision.transforms as transforms
 
 # ================== Pretrained Beit3 ================== #
 class Beit3():
-    def __init__(self):
+    def __init__(self, id2label, label2id):
         self.image_processor = AutoImageProcessor.from_pretrained("microsoft/beit-base-finetuned-ade-640-640")
-        self.model = BeitForSemanticSegmentation.from_pretrained("microsoft/beit-base-finetuned-ade-640-640")
+        self.feature_extractor = BeitFeatureExtractor.from_pretrained("microsoft/beit-base-finetuned-ade-640-640")
+        self.model = BeitForSemanticSegmentation.from_pretrained("microsoft/beit-base-finetuned-ade-640-640", id2label=id2label, label2id=label2id)
             
 
 # ====================== Dataset ====================== #            
@@ -64,6 +65,13 @@ def create_huggingface_dataset(train_dataset, val_dataset, test_dataset):
     
     return dataset_dict
 
+def train_transforms(beit, image):
+    image = beit.image_processor(image)
+    return image
+
+def val_transforms(beit, image):
+    image = beit.image_processor(image)
+    return image
 
     
 # ====================== Metrics ====================== #
