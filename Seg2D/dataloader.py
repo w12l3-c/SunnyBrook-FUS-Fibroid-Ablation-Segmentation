@@ -14,7 +14,7 @@ import pydicom
 import datasets
 from PIL import Image, ImageEnhance, ImageOps
 
-# ---------------------- Data Augmentation ---------------------- #
+# ===================== Data Augmentation ===================== #
 colour_jitter = transforms.Compose([
     transforms.ColorJitter(brightness=0.5, contrast=0.5),
 ])
@@ -112,7 +112,7 @@ def convert_to_PIL_multi(pairs, color_map, img_size=(320, 320)):
         img = img.convert("RGB")
         
         if mask is not None:
-            mask_canva = np.zeros((img_size[0], img_size[1], 3))
+            mask_canva = np.zeros((img_size[0], img_size[1]))
             
             for path in mask:
                 m = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
@@ -121,19 +121,20 @@ def convert_to_PIL_multi(pairs, color_map, img_size=(320, 320)):
                 
                 path_split = path.split("/")
                 region = path_split[-2]
-                color = color_map[region]
+                label = color_map[region]
                 
-                mask_canva[m_map] = color
+                mask_canva[m_map] = label
             
             mask = Image.fromarray(mask_canva.astype(np.uint8))
             mask = mask.resize(img_size)
+            mask = mask.convert("L")
             
         pair['img'] = img
         pair['mask'] = mask
     
     return pairs
 
-# ---------------------- Dataset & DataLoader ---------------------- #
+# ===================== Dataset & DataLoader ===================== #
 class PatientDataset2D(torch.utils.data.Dataset):
     def __init__(self, pairs, transform=None):
         self.pairs = pairs
@@ -168,7 +169,7 @@ def create_dataloader(patient, transform, batch_size=4, shuffle=False, num_worke
     return dataloader
 
 
-# ---------------------- Collate Functions ---------------------- #
+# ===================== Collate Functions ===================== #
 # For same size images but keeping the ratio of the original image
 def same_collate(batch):
     # Separate images and targets
