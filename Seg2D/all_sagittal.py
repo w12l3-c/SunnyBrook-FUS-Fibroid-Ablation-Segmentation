@@ -41,10 +41,13 @@ PIN_MEMORY = True   # Pin memory for faster GPU transfer
 NUM_EPOCHS = 200 # Just fot test, in pratical should be 100 or more
 BATCH_SIZE = 4  # Between 8-16 is good
 IN_CHANNELS = 3 # RGB
-COLOR_DICT = {'Spine': (35, 132, 250), 'Bowel': (14, 240, 56), 'Muscle': (214, 51, 36), 'Skin': (240, 170, 31), 'hip_L': (173, 20, 250), 'hip_R': (131, 20, 250)}   # Color map in dictionart
+COLOR_DICT = {'Background':(256, 256, 256), 'Spine': (35, 132, 250), 'Bowel': (14, 240, 56), 'Muscle': (214, 51, 36), 'Skin': (240, 170, 31), 'hip_L': (173, 20, 250), 'hip_R': (131, 20, 250)}   # Color map in dictionart
 COLOR_LIST = [v for v in COLOR_DICT.values()]   # Colour map in list
+ID2LABEL = {i: k for i, (k, v) in enumerate(COLOR_DICT.items())}
+LABEL2ID = {k: i for i, (k, v) in enumerate(COLOR_DICT.items())}
 NUM_CLASSES = len(COLOR_LIST) # Classes to Segment
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+path = 'nvidia/segformer-b0-finetuned-ade-512-512'
 
 # =================== Patient Dataset =================== #
 # Set seed for reproducibility
