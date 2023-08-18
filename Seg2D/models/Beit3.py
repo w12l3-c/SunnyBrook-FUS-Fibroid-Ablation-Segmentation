@@ -118,12 +118,19 @@ def accuracy_iou(pred, target):
     return mean_iou
 
 def accuracy_intersect(pred, target):
-    pred_mask = pred > 0.5
-    target_mask = target > 0.5
-    intersection = torch.sum(pred_mask * target_mask)
-    pred_total = torch.sum(pred_mask == True)
+    num_labels = target.unique().numel()
+    intersects = []
     
-    return intersection / pred_total
+    for label in range(num_labels):
+        pred_mask = pred == label
+        target_mask = target == label
+        intersection = torch.sum(pred_mask * target_mask)
+        score = intersection / torch.sum(target_mask)
+        intersects.append(score)
+    
+    mean_intersect = torch.mean(torch.stack(intersects))
+    
+    return mean_intersect
 
 def accuracy_basic(pred, target):
     pred = pred > 0.5
