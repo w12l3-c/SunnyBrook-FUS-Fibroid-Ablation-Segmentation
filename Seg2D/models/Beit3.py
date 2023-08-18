@@ -59,9 +59,6 @@ def create_huggingface_dataset(train_dataset, val_dataset, test_dataset):
         "validation": val_dataset,
         "test": test_dataset,
     })
-
-    # Print the dataset
-    print(dataset_dict)
     
     return dataset_dict
 
