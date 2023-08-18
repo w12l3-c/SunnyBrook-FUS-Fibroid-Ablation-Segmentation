@@ -49,22 +49,14 @@ def create_huggingface_dataset(train_dataset, val_dataset, test_dataset):
     val_dict = dataset2dict(val_dataset)
     test_dict = dataset2dict(test_dataset)
     
-    print(train_dict)
-    print(val_dict)
-    print(test_dict)
-    
     train_dataset = Dataset.from_dict(train_dict)
     val_dataset = Dataset.from_dict(val_dict)
     test_dataset = Dataset.from_dict(test_dict)
     
-    print(train_dataset)
-    print(val_dataset)
-    print(test_dataset)
-    
     dataset_dict = DatasetDict({
-        "train": Dataset.from_generator(train_dict),
-        "validation": Dataset.from_generator(val_dict),
-        "test": Dataset.from_generator(test_dict),
+        "train": train_dataset,
+        "validation": val_dataset,
+        "test": test_dataset,
     })
 
     # Print the dataset
