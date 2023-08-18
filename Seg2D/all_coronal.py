@@ -71,8 +71,6 @@ train_cor_dataset = convert_to_PIL_multi(train_cor_dataset, COLOR_DICT)
 val_cor_dataset = convert_to_PIL_multi(val_cor_dataset, COLOR_DICT)
 test_cor_dataset = convert_to_PIL_multi(test_cor_dataset, COLOR_DICT)
 
-
-
 dataset_dict = Beit3.create_huggingface_dataset(train_cor_dataset, val_cor_dataset, test_cor_dataset)
 
 
