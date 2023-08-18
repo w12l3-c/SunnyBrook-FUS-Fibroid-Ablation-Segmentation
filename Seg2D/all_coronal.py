@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 from utils import *
 from dataloader import *
 from save_load import *
-from models import DeepLabV3, Unet, Unetpp, DeepLabV3plus, FPN, MAnet
+from models import DeepLabV3, Unet, Unetpp, DeepLabV3plus, FPN, MAnet, Beit3
 from model_run_fn import deeplabv3_run, unet_run, unetpp_run, deeplabv3p_run, fpn_run, manet_run
 from model_inference_fn import deeplabv3_inference, unet_inference, unetpp_inference, deeplabv3plus_inference
 
@@ -69,26 +69,26 @@ train_sag_dataset = convert_to_PIL_multi(train_sag_dataset, COLOR_DICT)
 val_sag_dataset = convert_to_PIL_multi(val_sag_dataset, COLOR_DICT)
 test_sag_dataset = convert_to_PIL_multi(test_sag_dataset, COLOR_DICT)
 
-if __name__ == '__main__':
-    # Currently the training loop and functions are all catered for background and foreground so either 
-    # make new functions or change the current ones to accomodate for multilabel segmentation
+# if __name__ == '__main__':
+#     # Currently the training loop and functions are all catered for background and foreground so either 
+#     # make new functions or change the current ones to accomodate for multilabel segmentation
     
-    # =================== Training =================== #
-    try:
-        # Set the writer and save path
-        unet_writer = f"runs/Unet_Coronal_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Coronal_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
-        unet_run(train_sag_dataset, val_sag_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
-    except Exception as e:
-        print(e)
-        print('This training sessions failed')
+#     # =================== Training =================== #
+#     try:
+#         # Set the writer and save path
+#         unet_writer = f"runs/Unet_Coronal_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
+#         unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Coronal_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+#         unet_run(train_sag_dataset, val_sag_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
+#     except Exception as e:
+#         print(e)
+#         print('This training sessions failed')
     
-    # =================== Inference =================== #
-    try:
-        # Set the path where you save your model
-        unet_save_path = '/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Coronal_2023-08-01_18:02:56.pth'
-        unet_inference(test_sag_dataset, unet_save_path, device, num_classes=NUM_CLASSES, display=True)
-    except Exception as e:
-        print(e)
-        print('Inference session crashed')
+#     # =================== Inference =================== #
+#     try:
+#         # Set the path where you save your model
+#         unet_save_path = '/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Coronal_2023-08-01_18:02:56.pth'
+#         unet_inference(test_sag_dataset, unet_save_path, device, num_classes=NUM_CLASSES, display=True)
+#     except Exception as e:
+#         print(e)
+#         print('Inference session crashed')
         
