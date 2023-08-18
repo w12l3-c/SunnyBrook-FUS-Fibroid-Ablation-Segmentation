@@ -105,7 +105,7 @@ def accuracy_iou(pred, target):
     num_labels = target.unique().numel()
     ious = []
     
-    for label in range(num_labels):
+    for label in range(1, num_labels):
         pred_mask = pred == label
         target_mask = target == label
         intersection = torch.sum(pred_mask * target_mask)
@@ -121,7 +121,7 @@ def accuracy_intersect(pred, target):
     num_labels = target.unique().numel()
     intersects = []
     
-    for label in range(num_labels):
+    for label in range(1, num_labels):
         pred_mask = pred == label
         target_mask = target == label
         intersection = torch.sum(pred_mask * target_mask)
@@ -132,9 +132,22 @@ def accuracy_intersect(pred, target):
     
     return mean_intersect
 
+def accuracy_dice(pred, target):
+    num_labels = target.unique().numel()
+    dices = []
+    
+    for label in range(1, num_labels):
+        pred_mask = pred == label
+        target_mask = target == label
+        intersection = torch.sum(pred_mask * target_mask)
+        dice = (2 * intersection) / (torch.sum(pred_mask) + torch.sum(target_mask))
+        dices.append(dice)
+    
+    mean_dice = torch.mean(torch.stack(dices))
+    
+    return mean_dice
+
 def accuracy_basic(pred, target):
-    pred = pred > 0.5
-    target = target > 0.5
     correct = torch.sum(pred == target)
     return correct / pred.numel()
 
