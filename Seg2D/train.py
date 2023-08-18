@@ -246,29 +246,29 @@ def unet_train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy,
 
 # ==================== For Beit3 Only ==================== #
 # Need testing first
-def beit3_train_model(model, train_dataset, val_dataset, compute_metrics):
+def beit3_train_model(model, dataset_dict, epochs, batch_size, compute_metrics, push_to_hub=False):
     training_args = TrainingArguments(
-        output_dir="predictions",
-        learning_rate=1e-3,
-        num_train_epochs=100,
-        per_device_train_batch_size=2,
-        per_device_eval_batch_size=2,
-        save_total_limit=3,
-        evaluation_strategy="steps",
-        save_strategy="steps",
-        save_steps=20,
-        eval_steps=20,
-        logging_steps=1,
-        eval_accumulation_steps=5,
-        remove_unused_columns=False,
-        push_to_hub=False,
+        output_dir="/mnt/HDD_1TB/Wallace/Code/Seg2D/predictions",
+        # learning_rate=1e-3,
+        num_train_epochs=epochs,
+        per_device_train_batch_size=batch_size,
+        per_device_eval_batch_size=batch_size,
+        # save_total_limit=3,
+        # evaluation_strategy="steps",
+        save_strategy="epochs",
+        # save_steps=20,
+        # eval_steps=20,
+        # logging_steps=1,
+        # eval_accumulation_steps=5,
+        # remove_unused_columns=False,
+        # push_to_hub=push_to_hub,
     )
     
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=train_dataset,
-        eval_dataset=val_dataset,
+        train_dataset=dataset_dict["train"],
+        eval_dataset=dataset_dict["val"],
         compute_metrics=compute_metrics,
     )
     
