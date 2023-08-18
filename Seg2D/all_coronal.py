@@ -72,7 +72,7 @@ val_cor_dataset = convert_to_PIL_multi(val_cor_dataset, COLOR_DICT)
 test_cor_dataset = convert_to_PIL_multi(test_cor_dataset, COLOR_DICT)
 
 dataset_dict = Beit3.create_huggingface_dataset(train_cor_dataset, val_cor_dataset, test_cor_dataset)
-
+beit3 = Beit3.Beit3(ID2LABEL, LABEL2ID)
 
 # if __name__ == '__main__':
 #     # Currently the training loop and functions are all catered for background and foreground so either 
