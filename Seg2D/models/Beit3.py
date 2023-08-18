@@ -102,14 +102,20 @@ def compute_metrics(eval_pred):
     
 
 def accuracy_iou(pred, target):
-    pred_mask = pred > 0.5
-    target_mask = target > 0.5
+    num_labels = target.unique().numel()
+    ious = []
+    
+    for label in range(num_labels):
+        pred_mask = pred == label
+        target_mask = target == label
+        intersection = torch.sum(pred_mask * target_mask)
+        union = torch.sum(pred_mask + target_mask)
 
-    intersection = torch.sum(pred_mask * target_mask)
-    union = torch.sum(pred_mask + target_mask)
+        iou = intersection / union
+        ious.append(iou)
 
-    iou = intersection / union
-    return iou
+    mean_iou = torch.mean(torch.stack(ious))
+    return mean_iou
 
 def accuracy_intersect(pred, target):
     pred_mask = pred > 0.5
