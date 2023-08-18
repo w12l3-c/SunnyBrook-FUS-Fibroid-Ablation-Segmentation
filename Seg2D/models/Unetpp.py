@@ -87,6 +87,15 @@ def accuracy_basic(pred, target):
     correct = torch.sum(pred == target)
     return correct / pred.numel()
 
+def accuracy_dice(pred, target):
+    pred_mask = pred > 0.5
+    target_mask = target > 0.5
+
+    intersection = torch.sum(pred_mask * target_mask)
+    total = torch.sum(pred_mask) + torch.sum(target_mask)
+
+    dice = 2 * intersection / total
+    return dice
 
 def accuracy_iou_multi(pred, target):
     pred = torch.argmax(pred, dim=1)
@@ -110,7 +119,7 @@ def calculate_weights(mask):
   pos = torch.sum(mask > 0.5)
   return total/pos
 
-# ===================== Gamma Correction ===================== #
+# ====================== Gamma Correction ====================== #
 def gamma_correction_cv2(image, gamma=1.0):
     inv_gamma = 1.0 / gamma
     table = np.array([((i / 255.0) ** inv_gamma) * 255 for i in np.arange(0, 256)])
@@ -121,8 +130,7 @@ def gamma_correction_pil(image, gamma=1.0):
     gamma_corrected_image = enhancer.enhance(gamma)
     return gamma_corrected_image
 
-
-# ================ Inference ================ #
+# ====================== Inference ====================== #
 def predict(model, dataset, device, img_size):
     transform = torchvision.transforms.Compose([
         torchvision.transforms.ToTensor(),
@@ -149,60 +157,133 @@ def predict(model, dataset, device, img_size):
             totensor = torchvision.transforms.ToTensor()
             acc_iou = accuracy_iou(pred, totensor(mask.convert('L').resize(img_size)).to(device))
             acc_basic = accuracy_basic(pred, totensor(mask.convert('L').resize(img_size)).to(device))
+            acc_dice = accuracy_dice(pred, totensor(mask.convert('L').resize(img_size)).to(device))
             
             pred = pred.squeeze().cpu().numpy() * 255
             pred = cv2.resize(pred, img_size)
             
-            mask = mask.resize(img_size)
+            if mask is not None:
+                mask = mask.resize(img_size)
             
             inference_time = end_time - start_time
             
-            yield (image, mask, pred, acc_iou, acc_basic, inference_time)
+            yield (image, mask, pred, (acc_iou, acc_basic, acc_dice), inference_time)
             
-            
-def predict_UNETPP(model, dataset, device, img_size=(320, 320)):
+def predict_UNETPP(model, dataset, device, img_size=(320, 320), display=True):
     generator = predict(model, dataset, device, img_size)
-    save = input('Save predictions? (y/n): ')
-    directory = '/mnt/HDD_1TB/Wallace/Code/Seg2D/predictions/'
+    if display:
+        save = input('Save predictions? (y/n): ')
+        directory = '/mnt/HDD_1TB/Wallace/Code/Seg2D/predictions/'
     
-    if save == 'y':
-        try:
+        if save == 'y':
             if os.path.exists(directory):
                 print('Directory exists -- Continue')
-        except Exception as e:
-            os.mkdir(directory)
-            print('Directory created')
+            else:
+                os.makedirs(directory)
+                print('Directory created')
+
+        for i, prediction in enumerate(generator):
+            image, mask, pred, acc, time = prediction
+            acc_iou, acc_basic, acc_dice = acc
+            # image = gamma_correction_pil(image, gamma=1.5)  
+            
+            if mask is not None:
+                mask_edge = cv2.Canny(np.asarray(mask), 100, 200)
+                pred_edge = cv2.Canny(pred.astype(np.uint8), 100, 200)
+                
+                mask_edge_red = np.zeros((mask_edge.shape[0], mask_edge.shape[1], 3))
+                mask_edge_red[mask_edge > 0] = [255, 0, 0]
+                mask_edge_red = mask_edge_red.astype(np.uint8)
+                pred_edge_green = np.zeros((pred_edge.shape[0], pred_edge.shape[1], 3))
+                pred_edge_green[pred_edge > 0] = [0, 255, 0]
+                pred_edge_green = pred_edge_green.astype(np.uint8)
+                
+                edge_overlay = mask_edge_red + pred_edge_green
+                edge_overlay = edge_overlay.astype(np.uint8)
+                
+                mask_red = np.zeros((mask.size[1], mask.size[0], 3))
+                pred_green = np.zeros((mask.size[1], mask.size[0], 3))
+                
+                mask_map = np.asarray(mask) > 128
+                pred_map = pred > 0.5
+                
+                mask_red[mask_map] = [255, 0, 0]
+                pred_green[pred_map] = [0, 255, 0]
+                
+                mask_red = mask_red.astype(np.uint8)
+                pred_green = pred_green.astype(np.uint8)
+                
+                mask_overlay = mask_red + pred_green
+                mask_overlay = mask_overlay.astype(np.uint8)
+            
+            fig, ax = plt.subplots(2,3, figsize=(20,15))
+            
+            ax[0][0].imshow(image)
+            ax[0][1].imshow(image, alpha=0.7)
+            ax[0][1].imshow(mask_edge_red, alpha=0.3)
+            ax[0][2].imshow(image, alpha=0.7)
+            ax[0][2].imshow(pred_edge_green, alpha=0.3)
+            
+            ax[1][0].imshow(mask_red)
+            ax[1][1].imshow(pred_green)
+            ax[1][2].imshow(edge_overlay)
     
-    for i, prediction in enumerate(generator):
-        image, mask, pred, acc, time = prediction
+            ax[0][0].set_title('Image')
+            ax[0][1].set_title('Mask Overlay')
+            ax[0][2].set_title('Pred Overlay')
+            
+            ax[1][0].set_title('Ground Truth')
+            ax[1][1].set_title(f'Prediction: {acc_iou*100:.2f}(IOU) | {acc_basic*100:.2f}(Acc)')
+            ax[1][2].set_title('Edge Overlay')
+            
+            ax[0][0].axis('off')
+            ax[0][1].axis('off')
+            ax[0][2].axis('off')
+            ax[1][0].axis('off')
+            ax[1][1].axis('off')
+            ax[1][2].axis('off')
+            
+            fig.suptitle(f'Inference Time: {time:.4f} seconds')
+            plt.show()
+            
+            if save == 'y':
+                filename = f"predictions/mask_{i}.jpg"
+                # cv2.imwrite(os.path.join(directory, filename), pred)
+                fig.savefig(filename)
+                
+            if i % 10 == 0:
+                quit = input('Exit? (y/n): ')
+                if quit == 'y':
+                    break
+            
+        print('Inference Complete')
         
-        fig, ax = plt.subplots(1,4, figsize=(20,15))
-        ax[0].imshow(image)
-        ax[1].imshow(mask, cmap='gray')
-        ax[2].imshow(pred, cmap='gray')
-        ax[3].imshow(image, alpha=0.7)
-        ax[3].imshow(pred, alpha=0.3, cmap='gray')
+    else:
+        acc_ious = []
+        acc_basics = []
+        acc_dices = []
+        times = []
+        for prediction in generator:
+            image, mask, pred, acc, time = prediction
+            acc_iou, acc_basic, acc_dice = acc
+            acc_ious.append(acc_iou.item())
+            acc_basics.append(acc_basic.item())
+            acc_dices.append(acc_dice.item())
+            times.append(time)
+            
+        fig, ax = plt.subplots(2, 2, figsize=(20,10))
         
-        ax[0].set_title('Image')
-        ax[1].set_title('Ground Truth')
-        ax[2].set_title(f'Prediction: {acc:.2f}')
-        ax[3].set_title('Overlay')
+        ax[0][0].set_title(f'Accuracy (IOU) | Median:{np.median(np.array(acc_ious))*100:.4f}')
+        ax[0][0].plot(acc_ious)
+        ax[0][1].set_title(f'Accuracy (Basic) | Median:{np.median(np.array(acc_basics))*100:.4f}')
+        ax[0][1].plot(acc_basics)
+        ax[1][0].set_title(f'Accuracy (Dice) | Median:{np.median(np.array(acc_dices))*100:.4f}')
+        ax[1][0].plot(acc_dices)
+        ax[1][1].set_title(f'Inference Time (s) | Median:{np.median(np.array(times)):.4f}')
+        ax[1][1].plot(times[1:])
         
-        ax[0].axis('off')
-        ax[1].axis('off')
-        ax[2].axis('off')
-        ax[3].axis('off')
-        
-        fig.suptitle(f'Inference Time: {time:.4f} seconds')
         plt.show()
         
-        if save == 'y':
-            filename = f"mask_{i}.jpg"
-            cv2.imwrite(os.path.join(directory, filename), pred)
-        
-        if i % 10 == 0:
-            quit = input('Exit? (y/n): ')
-            if quit == 'y':
-                break
-        
-    print('Inference Complete')
+        save_path = f'metrics_{uuid.uuid1}.png'
+        fig.savefig(save_path)
+        print(f'Metrics saved to {save_path}')
