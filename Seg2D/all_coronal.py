@@ -41,7 +41,7 @@ PIN_MEMORY = True   # Pin memory for faster GPU transfer
 NUM_EPOCHS = 200 # Just fot test, in pratical should be 100 or more
 BATCH_SIZE = 4  # Between 8-16 is good
 IN_CHANNELS = 3 # RGB
-COLOR_DICT = {'Spine': (35, 132, 250), 'Bowel': (14, 240, 56), 'Muscle': (214, 51, 36), 'Skin': (240, 170, 31), 'hip_L': (173, 20, 250), 'hip_R': (131, 20, 250)}   # Color map in dictionart
+COLOR_DICT = {'Background':(256, 256, 256), 'Spine': (35, 132, 250), 'Bowel': (14, 240, 56), 'Muscle': (214, 51, 36), 'Skin': (240, 170, 31), 'hip_L': (173, 20, 250), 'hip_R': (131, 20, 250)}   # Color map in dictionart
 COLOR_LIST = [v for v in COLOR_DICT.values()]   # Colour map in list
 ID2LABEL = {int(k): v for k, v in COLOR_DICT.items()}
 LABEL2ID = {v: k for k, v in COLOR_DICT.items()}
@@ -67,9 +67,9 @@ test_cor_dataset = get_multilabel_coronal(test_patients)
 train_cor_dataset, val_cor_dataset = train_test_split(train_cor_dataset, test_size=0.1, random_state=42)
 
 # Convert the pydicom and mask list to PIL images
-train_cor_dataset = convert_to_PIL_multi(train_cor_dataset, COLOR_DICT)
-val_cor_dataset = convert_to_PIL_multi(val_cor_dataset, COLOR_DICT)
-test_cor_dataset = convert_to_PIL_multi(test_cor_dataset, COLOR_DICT)
+train_cor_dataset = convert_to_PIL_multi(train_cor_dataset, LABEL2ID)
+val_cor_dataset = convert_to_PIL_multi(val_cor_dataset, LABEL2ID)
+test_cor_dataset = convert_to_PIL_multi(test_cor_dataset, LABEL2ID)
 
 dataset_dict = Beit3.create_huggingface_dataset(train_cor_dataset, val_cor_dataset, test_cor_dataset)
 beit3 = Beit3.Beit3(ID2LABEL, LABEL2ID)
