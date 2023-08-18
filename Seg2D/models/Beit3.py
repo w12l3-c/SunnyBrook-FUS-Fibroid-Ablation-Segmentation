@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 import requests
+import pandas as pd
 
 import torch
 import torch.nn as nn
@@ -31,13 +32,39 @@ class Beit3():
 
 # ====================== Dataset ====================== #            
 # HuggingFace have a specific dataset structure
+def dataset2dict(dataset):
+    data_dict = {}
+    image_array = []
+    mask_array = []
+    for i in dataset:
+        image_array.append(i['img'])
+        mask_array.append(i['mask'])
+    data_dict['image'] = image_array
+    data_dict['mask'] = mask_array
+    return data_dict
+        
 # Convert your dataset into a DatasetDict
 def create_huggingface_dataset(train_dataset, val_dataset, test_dataset):
-    # Convert your dataset into a DatasetDict
+    train_dict = dataset2dict(train_dataset)
+    val_dict = dataset2dict(val_dataset)
+    test_dict = dataset2dict(test_dataset)
+    
+    print(train_dict)
+    print(val_dict)
+    print(test_dict)
+    
+    train_dataset = Dataset.from_dict(train_dict)
+    val_dataset = Dataset.from_dict(val_dict)
+    test_dataset = Dataset.from_dict(test_dict)
+    
+    print(train_dataset)
+    print(val_dataset)
+    print(test_dataset)
+    
     dataset_dict = DatasetDict({
-        "train": Dataset.from_dict(train_dataset),
-        "validation": Dataset.from_dict(val_dataset),
-        "test": Dataset.from_dict(test_dataset),
+        "train": Dataset.from_generator(train_dict),
+        "validation": Dataset.from_generator(val_dict),
+        "test": Dataset.from_generator(test_dict),
     })
 
     # Print the dataset
