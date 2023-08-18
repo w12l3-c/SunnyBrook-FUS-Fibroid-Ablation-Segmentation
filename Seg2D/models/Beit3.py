@@ -32,16 +32,18 @@ class Beit3():
 # ====================== Dataset ====================== #            
 # HuggingFace have a specific dataset structure
 # Convert your dataset into a DatasetDict
-def create_huggingface_dataset():
+def create_huggingface_dataset(train_dataset, val_dataset, test_dataset):
     # Convert your dataset into a DatasetDict
     dataset_dict = DatasetDict({
-        "train": Dataset.from_dict(train_data),
-        "validation": Dataset.from_dict(val_data),
-        "test": Dataset.from_dict(test_data),
+        "train": Dataset.from_dict(train_dataset),
+        "validation": Dataset.from_dict(val_dataset),
+        "test": Dataset.from_dict(test_dataset),
     })
 
     # Print the dataset
     print(dataset_dict)
+    
+    return dataset_dict
     
     
 # ====================== Metrics ====================== #
