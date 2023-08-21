@@ -101,7 +101,7 @@ def deeplabv3_train_step(model, dataloader, loss_fn, accuracy, optimizer, schedu
         train_acc += acc
         train_loss += loss
 
-        # Backpropagation
+        # Backward pass
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -247,26 +247,32 @@ def unet_train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, 
     Returns:
         Tuple[float, float]: Training loss and accuracy for the current step.
     """
-    model.train()
+    model.train()   # Training mode - Gradients are changable
     train_loss = 0
     train_acc = 0
 
+    # Loop over each batch
     for batch, (img, mask) in enumerate(dataloader):
+        # Push tensor to gpu or cpu
         img = img.to(device)
         mask = mask.to(device)
-        mask = mask.squeeze()
+        mask = mask.squeeze()   # Change mask shape for accuarcy and loss function
 
+        # Compute class weight for loss function
         pos_weight = weight_fn(mask).to(device)
 
+        # Forward pass    
         y_logits = model(img)
         y_pred = torch.softmax(y_logits, dim=1).argmax(dim=1).float()
 
+        # Compute loss and accuracy
         acc = accuracy(y_pred, mask)
         loss = loss_fn(y_logits[:, 1], mask) * pos_weight
 
         train_acc += acc.item()
         train_loss += loss.item()
 
+        # Backward pass
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
