@@ -47,7 +47,64 @@ arrayus_size = (256, 256)
 
 # ====================== Patient Class ====================== #
 class Patient:
+    """
+    Represents a uterine fibroid patient with segmentation data.
+
+    Args:
+        path (str): The root path to the patient's data.
+
+    Attributes:
+        path (str): The root path to the patient's data.
+        dir (list): A sorted list of directories in the patient's data.
+        name (str): The patient's name extracted from the path.
+        mask_dir (str): The directory containing masks.
+        dicom_dir (str): The directory containing DICOM images.
+        mask_listdir (list): A sorted list of directories in the mask directory.
+        dicom_listdir (list): A sorted list of directories in the DICOM directory.
+        coronal (str): The directory containing coronal DICOM images.
+        sagittal (str): The directory containing sagittal DICOM images.
+        coronal_listdir (list): A sorted list of directories in the coronal directory.
+        sagittal_listdir (list): A sorted list of directories in the sagittal directory.
+        colour_label (dict): A dictionary mapping region names to RGB color values.
+        colour_list (list): A list of RGB color values for regions.
+        sagittal_spacing (list): Spacing information for sagittal images.
+        LPS (list): LPS (Left-Posterior-Superior) coordinates for the patient.
+
+    Methods:
+        spine_seg(self):
+            Extracts spine masks and corresponding images.
+
+        bowel_seg(self):
+            Extracts bowel masks and corresponding images.
+
+        hipl_seg(self):
+            Extracts left hip masks and corresponding images.
+
+        hipr_seg(self):
+            Extracts right hip masks and corresponding images.
+
+        skin_seg(self):
+            Extracts skin and fat masks and corresponding images.
+
+        muscle_seg(self):
+            Extracts muscle masks and corresponding images.
+
+        inference_seg(self):
+            Extracts sagittal and coronal images without masks.
+
+        multilabel_seg(self):
+            Extracts multi-label masks and images for sagittal and coronal views.
+
+        prepare(self):
+            Runs all segmentation functions based on available folders.
+    """
     def __init__(self, path) -> None:
+        '''
+        Initialize the patient class with the path to the patient's data.
+        
+        Args:
+            path (str): The root path to the patient's data.
+        '''
         # Patient root path
         self.path = path    
         self.dir = sorted(os.listdir(path))
@@ -82,6 +139,10 @@ class Patient:
         self.LPS = [sagittal_slices, coronal_slices, coronal_slices]
         
     def spine_seg(self):
+        '''
+        Extracts spine masks and corresponding images.
+        Create the spine image and mask list.
+        '''
         # Spine masks directory
         self.spine_dir = os.path.join(self.mask_dir, 'Spine')
         self.spine_listdir = sorted(os.listdir(self.spine_dir))
@@ -95,6 +156,10 @@ class Patient:
         self.spine_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir[start-1:end]]
         
     def bowel_seg(self):
+        '''
+        Extracts bowel masks and corresponding images.
+        Create the bowel image and mask list.
+        '''
         # Bowel masks directory
         self.bowel_dir = os.path.join(self.mask_dir, 'Bowel')
         self.bowel_listdir = sorted(os.listdir(self.bowel_dir))
