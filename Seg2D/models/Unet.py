@@ -372,17 +372,46 @@ def accuracy_iou_multi(pred, target):
 
 # ====================== Class Weights ======================--- #
 def calculate_weights(mask):
-  total = mask.numel()
-  pos = torch.sum(mask > 0.5)
-  return total/pos
+    """
+    Calculate class weights based on the provided mask.
+
+    Args:
+        mask (torch.Tensor): Binary mask.
+
+    Returns:
+        torch.Tensor: Class weights.
+    """ 
+    total = mask.numel()
+    pos = torch.sum(mask > 0.5)
+    return total/pos
 
 # ====================== Gamma Correction ====================== #
 def gamma_correction_cv2(image, gamma=1.0):
+    """
+    Apply gamma correction to an image using OpenCV.
+
+    Args:
+        image (numpy.ndarray): Input image.
+        gamma (float): Gamma correction factor (default is 1.0).
+
+    Returns:
+        numpy.ndarray: Gamma-corrected image.
+    """
     inv_gamma = 1.0 / gamma
     table = np.array([((i / 255.0) ** inv_gamma) * 255 for i in np.arange(0, 256)])
     return cv2.LUT(image, table.astype(np.uint8))
 
 def gamma_correction_pil(image, gamma=1.0):
+    """
+    Apply gamma correction to an image using PIL (Python Imaging Library).
+
+    Args:
+        image (PIL.Image.Image): Input image.
+        gamma (float): Gamma correction factor (default is 1.0).
+
+    Returns:
+        PIL.Image.Image: Gamma-corrected image.
+    """
     enhancer = ImageEnhance.Brightness(image)
     gamma_corrected_image = enhancer.enhance(gamma)
     return gamma_corrected_image
