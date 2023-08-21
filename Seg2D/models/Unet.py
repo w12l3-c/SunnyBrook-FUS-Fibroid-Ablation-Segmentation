@@ -629,3 +629,4 @@ def predict_UNET(model, dataset, device, img_size=(320, 320), display=True):
         fig.savefig(save_path)
         print(f'Metrics saved to {save_path}')
         
+        
