@@ -529,4 +529,3 @@ if __name__ == '__main__':
     patient_19 = Patient(patient_19_root)
     
     
-
