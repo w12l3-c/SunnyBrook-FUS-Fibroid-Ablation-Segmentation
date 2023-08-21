@@ -1,7 +1,16 @@
+# =============================================================================
+# File Description:
+# ------------------
+# This file contains the class Patient class where
+# the patient's data is processed into images and masks
+# in a format that is readable by other functions such as dataloader
+# =============================================================================
+
+# ====================== Imports ====================== #
 import os
 import re
 
-# ---------------------- Main Roots ---------------------- #
+# ====================== Main Roots ====================== #
 # Main Root for Masks
 mask_root = "/mnt/HDD_1TB/Wallace/Segmentation_Raw_2D/"
 # Sub-Directories of Main
@@ -36,7 +45,7 @@ siemens_size = (320, 320)
 bones_size = (160, 320)
 arrayus_size = (256, 256)
 
-# ---------------------- Patient Class ---------------------- #
+# ====================== Patient Class ====================== #
 class Patient:
     def __init__(self, path) -> None:
         # Patient root path
@@ -159,72 +168,94 @@ class Patient:
 
     def multilabel_seg(self):
         # Multilabel masks directory
-        smallest_index = 10000
-        largest_index = 0
+        smallest_index = 10000  # Initialize with a large number
+        largest_index = 0    # Initialize with a small number
         
+        # Sagittal and Coronal parts
         sag_list = ['Bowel', 'Spine', 'Skin', 'Muscle']
         cor_list = ['hip_L', 'hip_R']
         
         # Sagittal
+        # Loop through the regions
         for region in sag_list:
+            # Region directory
             region_dir = os.path.join(self.mask_dir, region)
             if os.path.exists(region_dir):
+                # List of masks in the region directory
                 region_listdir = sorted(os.listdir(region_dir))
-            
+
+                # Find the start and end of the region
                 start = int(re.findall(r'\d+', region_listdir[0])[0])
                 end = int(re.findall(r'\d+', region_listdir[-1])[0])
                 
+                # Update the smallest and largest index
+                # This is to find the first slice and last slice of the patient that has at least one region
                 if start < smallest_index:
                     smallest_index = start
                 
                 if end > largest_index:
                     largest_index = end
         
+        # Create list for mask and image paths
         self.multilabel_sag_mask = []
         self.multilabel_sag_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir[smallest_index-1:largest_index]]
         
-        
+        # Loop through the slices
         for i in range(smallest_index, largest_index+1):
-            mask_stack = []
+            mask_stack = [] # Each slice might have more than 1 mask
+            # Loop through each region
             for region in sag_list:
                 region_dir = os.path.join(self.mask_dir, region)
                 if os.path.exists(region_dir):
+                    # Create list from the region directory
                     region_listdir = sorted(os.listdir(region_dir))
+                    # Loop through the directory to find the mask that has the same slice number
                     for path in region_listdir:
                         if int(re.findall(r'\d+', path)[0]) == i:
                             mask_stack.append(os.path.join(region_dir, path))
+            # Append 1 mask stack to the entire mask dataset
             self.multilabel_sag_mask.append(mask_stack)
         
         # Coronal 
-        smallest_index = 10000
-        largest_index = 0
+        smallest_index = 10000  # Initialize with a large number
+        largest_index = 0   # Initialize with a small number
         
+        # Loop through the regions
         for region in cor_list:
+            # Region directory
             region_dir = os.path.join(self.mask_dir, region)
             if os.path.exists(region_dir):
+                # List of masks in the region directory
                 region_listdir = sorted(os.listdir(region_dir))
             
                 start = int(re.findall(r'\d+', region_listdir[0])[0])
                 end = int(re.findall(r'\d+', region_listdir[-1])[0])
                 
+                # Find the largest and smallest index in the patient
                 if start < smallest_index:
                     smallest_index = start
                 
                 if end > largest_index:
                     largest_index = end
         
+        # Create list for mask and image paths
         self.multilabel_cor_mask = []
         self.multilabel_cor_img = [os.path.join(self.coronal, x) for x in self.coronal_listdir[smallest_index-1:largest_index]]
         
+        # Loop through the slices
         for i in range(smallest_index, largest_index+1):
-            mask_stack = []
+            mask_stack = [] # Each slice might have more than 1 mask
+            # Loop through each region
             for region in cor_list:
                 region_dir = os.path.join(self.mask_dir, region)
                 if os.path.exists(region_dir):
+                    # Create list from the region directory
                     region_listdir = sorted(os.listdir(region_dir))
                     for path in region_listdir:
+                        # Loop through the directory to find the mask that has the same slice number
                         if int(re.findall(r'\d+', path)[0]) == i:
                             mask_stack.append(os.path.join(region_dir, path))
+            # Append 1 mask stack to the entire mask dataset
             self.multilabel_cor_mask.append(mask_stack)
         
         # print(f"Multilabel Sag Mask: {self.multilabel_sag_mask[50:100]}")
