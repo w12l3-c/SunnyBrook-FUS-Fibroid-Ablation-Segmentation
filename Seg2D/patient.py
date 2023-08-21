@@ -207,6 +207,10 @@ class Patient:
         self.hipr_img = [os.path.join(self.coronal, x) for x in self.coronal_listdir[start-1:end]]
         
     def skin_seg(self):
+        '''
+        Extracts skin masks and corresponding images.
+        Create the skin image and mask list.
+        '''
         # Skin Fat masks directory
         self.skin_dir = os.path.join(self.mask_dir, 'Skin')
         self.skin_listdir = sorted(os.listdir(self.skin_dir))
