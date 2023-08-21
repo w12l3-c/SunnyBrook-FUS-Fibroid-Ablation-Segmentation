@@ -1,3 +1,12 @@
+# =============================================================================
+# File Description:
+# ------------------
+# This file contains the training functions for the models
+# These are the functions that will be called in the main scripts
+# like spine.py
+# ======================================================================== #
+
+# =================== Imports =================== #
 import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
