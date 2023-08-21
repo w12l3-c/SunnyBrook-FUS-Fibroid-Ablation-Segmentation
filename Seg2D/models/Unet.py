@@ -430,28 +430,35 @@ def predict(model, dataset, device, img_size):
     Yields:
         tuple: Tuple containing (image, ground truth mask, predicted mask, accuracy scores, inference time).
     """
+    # Transformation
     transform = torchvision.transforms.Compose([
         torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229,0.224,0.225])
     ])
     
+    # Set model to evaluation mode
     model.eval()
+    # Inference mode
     with torch.no_grad():
         for pair in dataset:
+            # Get image and mask
             image = pair['img']
             mask = pair['mask']
             
+            # Preprocessing
             image = image.convert('RGB')
             resized_image = image.resize(img_size)
             resized_image = gamma_correction_pil(resized_image, gamma=1.5)
             #resized_image = ImageOps.equalize(resized_image)
             transformed_image = transform(resized_image).to(device)
             
+            # Inference
             start_time = time.time()
             logits = model(transformed_image.unsqueeze(0))
             pred = torch.softmax(logits, dim=1).argmax(dim=1).float()
             end_time = time.time()
             
+            # Calculate accuracy and metrics
             totensor = torchvision.transforms.ToTensor()
             acc_iou = accuracy_iou(pred, totensor(mask.convert('L').resize(img_size)).to(device))
             acc_basic = accuracy_basic(pred, totensor(mask.convert('L').resize(img_size)).to(device))
@@ -460,9 +467,11 @@ def predict(model, dataset, device, img_size):
             pred = pred.squeeze().cpu().numpy() * 255
             pred = cv2.resize(pred, img_size)
             
+            # Resize mask
             if mask is not None:
                 mask = mask.resize(img_size)
             
+            # Calculate inference time
             inference_time = end_time - start_time
             
             yield (image, mask, pred, (acc_iou, acc_basic, acc_dice), inference_time)
