@@ -537,14 +537,19 @@ def train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy, opti
     Returns:
         Tuple[dict, dict]: Best model state dict and training results (loss and accuracy).
     """
+        # Initialize results in a dictionary
     results = { "train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
     
+    # Initialize early stopper
     early_stopper = EarlyStopper(patience=5, min_delta=5)
 
+    # Training
     for epoch in tqdm(range(epochs)):
+        # Run training and validation steps
         train_loss, train_acc = unet_train_step(model, train_dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device)
         val_loss, val_acc = unet_val_step(model, val_dataloader, loss_fn, accuracy, weight_fn, device)
 
+        # Update the current stats of the epoch
         results["train_loss"].append(train_loss)
         results["train_acc"].append(train_acc)
         results["val_loss"].append(val_loss)
@@ -563,6 +568,7 @@ def train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy, opti
             # Track the PyTorch model architecture
             # writer.add_graph(model=model, input_to_model=torch.randn(1, 3, 320, 320).to(device)) # Pass in an example input
 
+        # Early stopping
         if early_stopper.early_stop(val_loss):
             print('Model has not improved in 15 epochs.') 
             print('Early stopping.........')            
@@ -571,6 +577,7 @@ def train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy, opti
     if writer:
         writer.close()
 
+    # Save the best model
     best_model = deepcopy(model.state_dict())
 
     return best_model, results
