@@ -1,3 +1,13 @@
+# =============================================================================
+# File Description:
+# ------------------
+# This file contains the training loops, which consists of 
+#   1. Training step
+#   2. Validation step
+#   3. Main looping that called 1 and 2
+# =============================================================================
+
+# ==================== Imports ==================== #
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
@@ -23,10 +33,10 @@ class EarlyStopper:
             patience (int): The number of epochs with no improvement after which to stop training.
             min_delta (float): The minimum change in validation loss required to be considered an improvement.
         """
-        self.patience = patience
-        self.min_delta = min_delta
-        self.counter = 0
-        self.min_validation_loss = np.inf
+        self.patience = patience    # Number of epochs with no improvement allowed before early stopping
+        self.min_delta = min_delta  # Minimum change in validation loss for improvement to be considered
+        self.counter = 0            # Counter to keep track of epochs with no improvement
+        self.min_validation_loss = np.inf  # Initialize with positive infinity to track the lowest validation loss
 
     def early_stop(self, validation_loss):
         """
@@ -40,12 +50,15 @@ class EarlyStopper:
             bool: True if early stopping criteria are met, otherwise False.
         """
         if validation_loss < self.min_validation_loss:
-            self.min_validation_loss = validation_loss
-            self.counter = 0
+            # If the current validation loss is lower than the minimum recorded so far
+            self.min_validation_loss = validation_loss 
+            self.counter = 0  # Reset the counter as there's an improvement
         elif validation_loss > (self.min_validation_loss + self.min_delta):
-            self.counter += 1
+            # If the current validation loss increases by more than min_delta
+            self.counter += 1  # Increment the counter to track epochs with no improvement
             if self.counter >= self.patience:
-                return True
+                # If the counter exceeds the patience threshold, early stopping is needed
+                return True  
     
 
 # ==================== For DeepLabV3 Only ==================== #
@@ -70,20 +83,25 @@ def deeplabv3_train_step(model, dataloader, loss_fn, accuracy, optimizer, schedu
     train_loss = 0
     train_acc = 0
 
+    # Loop over each batch
     for batch, (img, mask) in enumerate(dataloader):
+        # Push tensor to gpu or cpu
         img = img.to(device)
         mask = mask.to(device)
 
+        # Forward pass
         y_logits = model(img)['out']
         y_pred = torch.sigmoid(y_logits)
         # y_pred = y_logits.argmax(1).unsqueeze(1)  # Do not do argmax with 1 channel
 
+        # Compute loss and accuracy
         acc = accuracy(y_pred, mask)
         loss = loss_fn(y_logits, mask)
 
         train_acc += acc
         train_loss += loss
 
+        # Backpropagation
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -91,11 +109,14 @@ def deeplabv3_train_step(model, dataloader, loss_fn, accuracy, optimizer, schedu
         if batch % int(len(dataloader)*0.2) == 0 and batch != 0:
             print(f"Batch: {batch}/{len(dataloader)} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f}")
 
+    # Total loss and accuracy for the epoch
     train_loss /= len(dataloader)
     train_acc /= len(dataloader)
+    
+    # Update the learning rate with scheduler
     scheduler.step()
+    
     # print(f"Dice loss: {train_loss:.4f}| Train acc: {train_acc:.4f}")
-
     return train_loss, train_acc
 
 
