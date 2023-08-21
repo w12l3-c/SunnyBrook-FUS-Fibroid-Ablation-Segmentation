@@ -528,4 +528,3 @@ if __name__ == '__main__':
     patient_19_root = os.path.join(mask_root + lowres, listlowres[0])
     patient_19 = Patient(patient_19_root)
     
-    
