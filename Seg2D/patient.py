@@ -411,11 +411,17 @@ def get_muscle(patient_list):
     Returns:
         list: A list of dictionaries containing abdominal muscle images and masks.
     """
+    # Create an empty list to store image and mask pairs.
     path_list = []
+    # Loop through each patient in the patient_list.
     for patient in patient_list:
+        # Check if the patient object has 'muscle_img' attribute.
         if hasattr(patient, 'muscle_img'):
+            # Iterate over the abdominal muscle images of the patient.
             for index, img in enumerate(patient.muscle_img):
+                # Retrieve the corresponding mask for the current abdominal muscle image.
                 mask = patient.muscle_mask[index]
+                # Create a dictionary containing the image and mask and add it to the path_list.
                 path_list.append({'img':img, 'mask':mask})
     return path_list
 
