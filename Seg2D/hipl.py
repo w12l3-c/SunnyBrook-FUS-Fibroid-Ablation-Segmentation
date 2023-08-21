@@ -66,7 +66,7 @@ val_hipl_dataset = convert_to_PIL(val_hipl_dataset, img_size=(160, 160))
 test_hipl_dataset = convert_to_PIL(test_hipl_dataset, img_size=(160, 160))
 
 if __name__ == "__main__":
-    # Training Block
+    # =================== Training =================== #
     # try:
     #     # Set up the tensorboard and save path
     #     unet_writer = f"runs/Unet_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     #     print(e)
     #     print('Training Session Crashed')
         
-    # Inference Block
+    # =================== Inference =================== #
     try:
         # Set up the path where the model '.pth' file is saved
         unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_2023-08-10_16.pth"
@@ -86,8 +86,10 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         print('Inference Session Crashed')
-        
+       
+    # =================== Training =================== #    
     try:
+        # Set the tensorboard and save path
         deeplabv3p_writer = f"runs/DeepLabV3P_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
         deeplabv3p_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_HipL_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         deeplabv3p_run(train_hipl_dataset, val_hipl_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, deeplabv3p_writer, deeplabv3p_save_path, 'BCE')
