@@ -477,11 +477,28 @@ def predict(model, dataset, device, img_size):
             yield (image, mask, pred, (acc_iou, acc_basic, acc_dice), inference_time)
             
 def predict_UNET(model, dataset, device, img_size=(320, 320), display=True):
+    """
+    Perform predictions using a UNet model on a dataset and optionally display the results.
+    If `display` is `True`, the user will be prompted to save the predictions of individual inference.
+    If `display` is `False`, it will save a figure where it find the overall metrics for the entire dataset.
+
+    Args:
+        model (torch.nn.Module): UNet model for segmentation.
+        dataset (iterable): Iterable containing image-mask pairs.
+        device (torch.device): Device to run inference on.
+        img_size (tuple): Size to resize input images.
+        display (bool): Whether to display results interactively (default is True).
+    """
+    # Create generator for predictions
     generator = predict(model, dataset, device, img_size)
+    
+    # If display is True, prompt user to save predictions
     if display:
+        # Prompt user to save predictions
         save = input('Save predictions? (y/n): ')
         directory = '/mnt/HDD_1TB/Wallace/Code/Seg2D/predictions/'
-    
+
+        # Create directory if it doesn't exist
         if save == 'y':
             if os.path.exists(directory):
                 print('Directory exists -- Continue')
@@ -489,6 +506,7 @@ def predict_UNET(model, dataset, device, img_size=(320, 320), display=True):
                 os.makedirs(directory)
                 print('Directory created')
 
+        # Iterate over generator
         for i, prediction in enumerate(generator):
             image, mask, pred, acc, time = prediction
             acc_iou, acc_basic, acc_dice = acc
