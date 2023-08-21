@@ -435,11 +435,17 @@ def get_skin(patient_list):
     Returns:
         list: A list of dictionaries containing skin and fat images and masks.
     """
+    # Create an empty list to store image and mask pairs.
     path_list = []
+    # Loop through each patient in the patient_list.
     for patient in patient_list:
+        # Check if the patient object has 'skin_img' attribute.
         if hasattr(patient, 'skin_img'):
+            # Iterate over the skin images of the patient.
             for index, img in enumerate(patient.skin_img):
+                # Retrieve the corresponding mask for the current skin image.
                 mask = patient.skin_mask[index]
+                # Create a dictionary containing the image and mask and add it to the path_list.
                 path_list.append({'img':img, 'mask':mask})
         
     return path_list
@@ -454,15 +460,21 @@ def get_inference(patient_list):
     Returns:
         tuple: A tuple of two lists containing sagittal and coronal images without masks.
     """
+    # Create an empty list to store image and mask pairs.
     path_list_sagittal = []
     path_list_coronal = []
+    # Loop through each patient in the patient_list.
     for patient in patient_list:
         for index, img in enumerate(patient.sagittal_img):
+            # Empty mask because the images are not annotated.
             mask = None
+            # Create a dictionary containing the image and mask and add it to the path_list.
             path_list_sagittal.append({'img':img, 'mask':mask})
     for patient in patient_list:
         for index, img in enumerate(patient.coronal_img):
+            # Empty mask because the images are not annotated.
             mask = None
+            # Create a dictionary containing the image and mask and add it to the path_list.
             path_list_coronal.append({'img':img, 'mask':mask})
             
     return path_list_sagittal, path_list_coronal
@@ -477,10 +489,15 @@ def get_multilabel_coronal(patient_list):
     Returns:
         list: A list of dictionaries containing multi-label coronal images and masks.
     """
+    # Create an empty list to store image and mask pairs.
     path_list = []
+    # Loop through each patient in the patient_list.
     for patient in patient_list:
+        # Check if the patient object has 'multilabel_cor_img' attribute.
         for index, img in enumerate(patient.multilabel_cor_img):
+            # Retrieve the corresponding mask for the current multi-label coronal image.
             mask = patient.multilabel_cor_mask[index]
+            # Create a dictionary containing the image and mask and add it to the path_list.
             path_list.append({'img':img, 'mask':mask})
     return path_list
 
@@ -494,10 +511,15 @@ def get_multilabel_sagittal(patient_list):
     Returns:
         list: A list of dictionaries containing multi-label sagittal images and masks.
     """
+    # Create an empty list to store image and mask pairs.
     path_list = []
+    # Loop through each patient in the patient_list.
     for patient in patient_list:
+        # Check if the patient object has 'multilabel_sag_img' attribute.
         for index, img in enumerate(patient.multilabel_sag_img):
+            # Retrieve the corresponding mask for the current multi-label sagittal image.
             mask = patient.multilabel_sag_mask[index]
+            # Create a dictionary containing the image and mask and add it to the path_list.
             path_list.append({'img':img, 'mask':mask})
     return path_list
 
