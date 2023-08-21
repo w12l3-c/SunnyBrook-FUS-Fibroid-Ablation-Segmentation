@@ -251,6 +251,10 @@ class Patient:
         self.coronal_img = [os.path.join(self.coronal, x) for x in self.coronal_listdir]
 
     def multilabel_seg(self):
+        '''
+        Extracts multilabel masks and corresponding images.
+        Create the multilabel image and mask list for both coronal and sagittal
+        '''
         # Multilabel masks directory
         smallest_index = 10000  # Initialize with a large number
         largest_index = 0    # Initialize with a small number
@@ -346,6 +350,9 @@ class Patient:
         # print(f"Multilabel Cor Mask: {self.multilabel_cor_mask[:3]}")
         
     def prepare(self):
+        '''
+        Prepare the image and mask list for the patient
+        '''
         # Run all segmentation file paths functions above base on the avaliable folder in patient
         # ie. Spine masks is available in all patients, but Muscle is not
         if 'Spine' in self.mask_listdir:
