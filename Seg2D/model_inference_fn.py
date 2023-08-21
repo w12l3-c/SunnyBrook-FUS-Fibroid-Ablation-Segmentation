@@ -113,9 +113,6 @@ def unetpp_inference(test_dataset, model_path, device, num_classes=2, img_size=(
         device (torch.device): The device to run inference on.
         num_classes (int, optional): The number of output classes. Default is 2.
         img_size (tuple, optional): The size of the input images. Default is (320, 320).
-
-    Returns:
-        None
     """
     # Set Seed
     torch.manual_seed(42)
@@ -138,9 +135,6 @@ def deeplabv3plus_inference(test_dataset, model_path, device, num_classes=2, img
         device (torch.device): The device to run inference on.
         num_classes (int, optional): The number of output classes. Default is 2.
         img_size (tuple, optional): The size of the input images. Default is (320, 320).
-
-    Returns:
-        None
     """
     # Set Seed
     torch.manual_seed(42)
@@ -162,9 +156,6 @@ def fpn_inference(test_dataset, model_path, device, num_classes=2, img_size=(320
         device (torch.device): The device to run inference on.
         num_classes (int, optional): The number of output classes. Default is 2.
         img_size (tuple, optional): The size of the input images. Default is (320, 320).
-
-    Returns:
-        None
     """
     # Set Seed
     torch.manual_seed(42)
@@ -186,9 +177,6 @@ def manet_inference(test_dataset, model_path, device, num_classes=2, img_size=(3
         device (torch.device): The device to run inference on.
         num_classes (int, optional): The number of output classes. Default is 2.
         img_size (tuple, optional): The size of the input images. Default is (320, 320).
-
-    Returns:
-        None
     """
     # Set Seed
     torch.manual_seed(42)
