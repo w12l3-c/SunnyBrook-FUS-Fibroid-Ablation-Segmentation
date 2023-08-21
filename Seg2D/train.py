@@ -189,14 +189,18 @@ def deeplabv3_train_model(model, train_dataloader, val_dataloader, loss_fn, accu
     Returns:
         Tuple[dict, dict]: Best model state dict and training results (loss and accuracy).
     """
+    # Save results in a dictionary
     results = { "train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
     best_acc = 0
     best_model = deepcopy(model.state_dict())
 
+    # Loop over epochs
     for epoch in tqdm(range(epochs)):
+        # Run train anf validation steps
         train_loss, train_acc = deeplabv3_train_step(model, train_dataloader, loss_fn, accuracy, optimizer, scheduler, device)
         val_loss, val_acc = deeplabv3_val_step(model, val_dataloader, loss_fn, accuracy, device)
 
+        # Save results for the epoch
         results["train_loss"].append(train_loss.item())
         results["train_acc"].append(train_acc)
         results["val_loss"].append(val_loss.item())
@@ -204,6 +208,7 @@ def deeplabv3_train_model(model, train_dataloader, val_dataloader, loss_fn, accu
 
         print(f"Epoch: {epoch+1}/{epochs} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
 
+        # Save the best model
         if train_acc > best_acc:
             best_model = deepcopy(model.state_dict())
 
