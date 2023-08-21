@@ -190,6 +190,10 @@ class Patient:
         self.hipl_img = [os.path.join(self.coronal, x) for x in self.coronal_listdir[start-1:end]]
         
     def hipr_seg(self):
+        '''
+        Extracts right hip masks and corresponding images.
+        Create the right hip image and mask list.
+        '''
         # Right Hip masks directory
         self.hipr_dir = os.path.join(self.mask_dir, 'hip_R')
         self.hipr_listdir = sorted(os.listdir(self.hipr_dir))
