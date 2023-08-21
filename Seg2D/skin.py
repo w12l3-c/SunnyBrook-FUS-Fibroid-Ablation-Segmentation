@@ -66,10 +66,10 @@ train_skin_dataset = convert_to_PIL(train_skin_dataset)
 val_skin_dataset = convert_to_PIL(val_skin_dataset)
 test_skin_dataset = convert_to_PIL(test_skin_dataset)
 
-
-
 if __name__ == "__main__":
+    # =================== Training =================== #
     try:
+        # Set the tensorboard and save path
         unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         unet_writer_path = f"runs/Unet_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
         unet_run(train_skin_dataset, val_skin_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_save_path, unet_writer_path, 'BCE')
@@ -77,14 +77,18 @@ if __name__ == "__main__":
         print(e)
         print('Session Crashed')
     
+    # =================== Inference =================== #
     try:
         unet_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_2023-08-03_14.pth"
+        # display=True to show individual images and results, display=False to show the overall stats of entire dataset
         unet_inference(test_skin_dataset, unet_path, device, display=False)
     except Exception as e:
         print(e)
         print('Session Crashed')
         
+    # =================== Training =================== #
     try:
+        # Set the tensorboard and save path
         deeplabv3p_writer = f"runs/DeepLabV3P_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
         deeplabv3p_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         deeplabv3p_run(train_skin_dataset, val_skin_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, deeplabv3p_writer, deeplabv3p_save_path, 'BCE')
