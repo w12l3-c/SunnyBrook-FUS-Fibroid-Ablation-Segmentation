@@ -151,6 +151,17 @@ class UNet(nn.Module):
 # ====================== Pytorch UNet Modifiable ====================== #
 from torchinfo import summary
 def auto_UNET(in_channels, num_classes):
+    """
+    Create a UNet model with the specified number of input channels and output classes.
+
+    Args:
+        in_channels (int): Number of input channels.
+        num_classes (int): Number of output classes.
+
+    Returns:
+        torch.nn.Module: UNet model.
+    """
+    # I am using smp here because they have pretrained weights from imagenet
     model = smp.Unet(
         encoder_name="resnet101",       
         encoder_weights="imagenet",    
@@ -158,7 +169,7 @@ def auto_UNET(in_channels, num_classes):
         classes=num_classes,                      
     )
 
-    # Somehow freezing weights decrease performance
+    # Freezing weights is not recommended, the pretrained weights are just to make the convergence happen faster
     # for param in model.encoder.parameters():
     #     param.requires_grad = False
 
@@ -168,6 +179,15 @@ def auto_UNET(in_channels, num_classes):
     return model
 
 def prepare_transform(flip=0.3):
+    """
+    Prepare data augmentation transformations.
+
+    Args:
+        flip (float, optional): Probability of horizontal flip. Default is 0.3.
+
+    Returns:
+        torchvision.transforms.Compose: Data transformation pipeline.
+    """
     params = get_preprocessing_params('resnet101', pretrained='imagenet')
     transform = torchvision.transforms.Compose([
         torchvision.transforms.RandomHorizontalFlip(flip),
@@ -177,6 +197,15 @@ def prepare_transform(flip=0.3):
     return transform
 
 def prepare_loss(option='BCE'):
+    """
+    Prepare the loss function.
+
+    Args:
+        option (str, optional): Loss function option ('BCE', 'CE', 'Dice_Binary', 'Dice_Multi'). Default is 'BCE'.
+
+    Returns:
+        torch.nn.Module: Loss function.
+    """
     if option == 'BCE':
         criterion = nn.BCEWithLogitsLoss()  
     if option == 'CE':
@@ -189,6 +218,17 @@ def prepare_loss(option='BCE'):
     return criterion
 
 def prepare_optimizer(model, lr=1e-3, option='Adam'):
+    """
+    Prepare the optimizer.
+
+    Args:
+        model (torch.nn.Module): Model for optimization.
+        lr (float, optional): Learning rate. Default is 1e-3.
+        option (str, optional): Optimizer option ('Adam', 'AdamW', 'SGD'). Default is 'Adam'.
+
+    Returns:
+        torch.optim.Optimizer: Optimizer.
+    """
     if option == 'Adam':
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     if option == 'AdamW':
@@ -198,49 +238,125 @@ def prepare_optimizer(model, lr=1e-3, option='Adam'):
     return optimizer
 
 def prepare_scheduler(optimizer, factor=0.1, patience=10, min_lr=1e-6, verbose=True):
+    """
+    Prepare the learning rate scheduler.
+
+    Args:
+        optimizer (torch.optim.Optimizer): Optimizer for which to schedule learning rates.
+        factor (float, optional): Factor by which to reduce learning rate. Default is 0.1.
+        patience (int, optional): Number of epochs with no improvement before reducing learning rate. Default is 10.
+        min_lr (float, optional): Minimum learning rate. Default is 1e-6.
+        verbose (bool, optional): If True, print a message when learning rate is reduced. Default is True.
+
+    Returns:
+        torch.optim.lr_scheduler.ReduceLROnPlateau: Learning rate scheduler.
+    """
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=factor, patience=patience, min_lr=min_lr, verbose=verbose)
     return scheduler
 
 
 # ====================== Accuracy ====================== #
 def accuracy_iou(pred, target):
-    pred_mask = pred > 0.5
+    """
+    Calculate Intersection over Union (IoU) accuracy between predicted and target binary masks.
+
+    Args:
+        pred (torch.Tensor): Predicted binary mask.
+        target (torch.Tensor): Target binary mask.
+
+    Returns:
+        torch.Tensor: IoU accuracy score.
+    """
+    # Create mask for pred and targets
+    pred_mask = pred > 0.5  
     target_mask = target > 0.5
 
+    # Calculate intersection and union base on the mask AND & OR operation
     intersection = torch.sum(pred_mask * target_mask)
     union = torch.sum(pred_mask + target_mask)
 
+    # Calculate IoU
     iou = intersection / union
     return iou
 
 def accuracy_intersect(pred, target):
+    """
+    Calculate accuracy based on the intersection of predicted and target binary masks.
+
+    Args:
+        pred (torch.Tensor): Predicted binary mask.
+        target (torch.Tensor): Target binary mask.
+
+    Returns:
+        torch.Tensor: Intersection accuracy score.
+    """
+    # Create mask for pred and targets  
     pred_mask = pred > 0.5
     target_mask = target > 0.5
+    
+    # Using the AND operation to calculate the intersection
     intersection = torch.sum(pred_mask * target_mask)
     pred_total = torch.sum(pred_mask == True)
     
     return intersection / pred_total
 
 def accuracy_basic(pred, target):
+    """
+    Calculate basic accuracy between predicted and target binary masks.
+
+    Args:
+        pred (torch.Tensor): Predicted binary mask.
+        target (torch.Tensor): Target binary mask.
+
+    Returns:
+        torch.Tensor: Basic accuracy score.
+    """
+    # Create mask for pred and targets
     pred = pred > 0.5
     target = target > 0.5
+    # Simply sum up the number of correct pixels and divide by the total number of pixels
     correct = torch.sum(pred == target)
     return correct / pred.numel()
 
 def accuracy_dice(pred, target):
+    """
+    Calculate Dice coefficient accuracy between predicted and target binary masks.
+
+    Args:
+        pred (torch.Tensor): Predicted binary mask.
+        target (torch.Tensor): Target binary mask.
+
+    Returns:
+        torch.Tensor: Dice coefficient accuracy score.
+    """
+    # Create mask for pred and targets
     pred_mask = pred > 0.5
     target_mask = target > 0.5
 
+    # Calculate intersection and union base on the mask AND & OR operation
     intersection = torch.sum(pred_mask * target_mask)
     total = torch.sum(pred_mask) + torch.sum(target_mask)
 
+    # Dice coefficient formula
     dice = 2 * intersection / total
     return dice
 
 def accuracy_iou_multi(pred, target):
-    pred = torch.argmax(pred, dim=1)
+    """
+    Calculate Intersection over Union (IoU) accuracy for multiple classes in predicted and target masks.
+
+    Args:
+        pred (torch.Tensor): Predicted multi-class mask.
+        target (torch.Tensor): Target multi-class mask.
+
+    Returns:
+        torch.Tensor: Mean IoU accuracy score across classes.
+    """
+    pred = torch.argmax(pred, dim=1)    
     ious = []
+    # Loop through all classes
     for i in torch.unique(target):
+        # Same operation as th regular IOU
         pred_mask = pred == i
         target_mask = target == i
 
@@ -250,6 +366,7 @@ def accuracy_iou_multi(pred, target):
         iou = intersection / union
         ious.append(iou)
     
+    # Return the mean of all classes' IOU
     return torch.mean(torch.tensor(ious))
 
 
