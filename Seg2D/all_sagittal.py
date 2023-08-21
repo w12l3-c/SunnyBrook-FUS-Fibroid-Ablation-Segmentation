@@ -47,7 +47,7 @@ ID2LABEL = {i: k for i, (k, v) in enumerate(COLOR_DICT.items())}
 LABEL2ID = {k: i for i, (k, v) in enumerate(COLOR_DICT.items())}
 NUM_CLASSES = len(COLOR_LIST) # Classes to Segment
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-path = 'nvidia/segformer-b0-finetuned-ade-512-512'
+path = 'nvidia/segformer-b0-finetuned-ade-512-512'  # Huggingface model path
 
 # =================== Patient Dataset =================== #
 # Set seed for reproducibility
