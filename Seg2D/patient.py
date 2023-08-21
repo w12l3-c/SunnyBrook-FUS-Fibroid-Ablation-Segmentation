@@ -1,6 +1,6 @@
 # =============================================================================
 # File Description:
-# ------------------
+# =====================
 # This file contains the class Patient class where
 # the patient's data is processed into images and masks
 # in a format that is readable by other functions such as dataloader
@@ -276,12 +276,12 @@ class Patient:
             self.skin_seg()
         if 'Muscle' in self.mask_listdir:
             self.muscle_seg()
-            
+        
         self.inference_seg()
         self.multilabel_seg()
             
             
-# ------------------ Create Patient List ------------------ #
+# ===================== Create Patient List ===================== #
 def create_patient_list(path_list=listsiemens):
     # Full list of patient images
     patient_list = []
@@ -299,40 +299,98 @@ def create_patient_list(path_list=listsiemens):
     return patient_list
     
     
-# ------------------ Convert Patient List to Torch Dataset Style ------------------ #    
+# ============= Convert Patient List to Torch Dataset Style ============ #    
 def get_spine(patient_list):
+    """
+    Extract spine images and masks from a list of patients.
+
+    Args:
+        patient_list (list): A list of patient objects.
+
+    Returns:
+        list: A list of dictionaries containing spine images and masks.
+    """
+    # Create an empty list to store image and mask pairs.
     path_list = []
+
+    # Loop through each patient in the patient_list.
     for patient in patient_list:
+        # Check if the patient object has 'spine_img' attribute.
         if hasattr(patient, 'spine_img'):
+            # Iterate over the spine images of the patient.
             for index, img in enumerate(patient.spine_img):
+                # Retrieve the corresponding mask for the current spine image.
                 mask = patient.spine_mask[index]
-                path_list.append({'img':img, 'mask':mask})
+                # Create a dictionary containing the image and mask and add it to the path_list.
+                path_list.append({'img': img, 'mask': mask})
 
     return path_list
     
 def get_bowel(patient_list):
+    """
+    Extract bowel images and masks from a list of patients.
+
+    Args:
+        patient_list (list): A list of patient objects.
+
+    Returns:
+        list: A list of dictionaries containing bowel images and masks.
+    """
+    # Create an empty list to store image and mask pairs.
     path_list = []
+    # Loop through each patient in the patient_list.
     for patient in patient_list:
+        # Check if the patient object has 'bowel_img' attribute.
         if hasattr(patient, 'bowel_img'):
+            # Iterate over the bowel images of the patient.
             for index, img in enumerate(patient.bowel_img):
+                # Retrieve the corresponding mask for the current bowel image.
                 mask = patient.bowel_mask[index]
+                # Create a dictionary containing the image and mask and add it to the path_list.
                 path_list.append({'img':img, 'mask':mask})
 
     return path_list
 
 def get_hipl(patient_list):
+    """
+    Extract left hip images and masks from a list of patients.
+
+    Args:
+        patient_list (list): A list of patient objects.
+
+    Returns:
+        list: A list of dictionaries containing left hip images and masks.
+    """
+    # Create an empty list to store image and mask pairs.
     path_list = []
+    # Loop through each patient in the patient_list.
     for patient in patient_list:
+        # Check if the patient object has 'hipl_img' attribute.
         if hasattr(patient, 'hipl_img'):
+            # Iterate over the left hip images of the patient.
             for index, img in enumerate(patient.hipl_img):
+                # Retrieve the corresponding mask for the current left hip image.
                 mask = patient.hipl_mask[index]
+                # Create a dictionary containing the image and mask and add it to the path_list.
                 path_list.append({'img':img, 'mask':mask})
     
     return path_list
 
 def get_hipr(patient_list):
+    """
+    Extract right hip images and masks from a list of patients.
+
+    Args:
+        patient_list (list): A list of patient objects.
+
+    Returns:
+        list: A list of dictionaries containing right hip images and masks.
+    """
+    # Create an empty list to store image and mask pairs.
     path_list = []
+    # Loop through each patient in the patient_list.
     for patient in patient_list:
+        # Check if the patient object has 'hipr_img' attribute.
         if hasattr(patient, 'hipr_img'):
             for index, img in enumerate(patient.hipr_img):
                 mask = patient.hipr_mask[index]
@@ -341,6 +399,15 @@ def get_hipr(patient_list):
     return path_list
 
 def get_muscle(patient_list):
+    """
+    Extract abdominal muscle images and masks from a list of patients.
+
+    Args:
+        patient_list (list): A list of patient objects.
+
+    Returns:
+        list: A list of dictionaries containing abdominal muscle images and masks.
+    """
     path_list = []
     for patient in patient_list:
         if hasattr(patient, 'muscle_img'):
@@ -350,6 +417,15 @@ def get_muscle(patient_list):
     return path_list
 
 def get_skin(patient_list):
+    """
+    Extract skin and fat images and masks from a list of patients.
+
+    Args:
+        patient_list (list): A list of patient objects.
+
+    Returns:
+        list: A list of dictionaries containing skin and fat images and masks.
+    """
     path_list = []
     for patient in patient_list:
         if hasattr(patient, 'skin_img'):
@@ -360,6 +436,15 @@ def get_skin(patient_list):
     return path_list
 
 def get_inference(patient_list):
+    """
+    Extract sagittal and coronal images without masks from a list of patients.
+
+    Args:
+        patient_list (list): A list of patient objects.
+
+    Returns:
+        tuple: A tuple of two lists containing sagittal and coronal images without masks.
+    """
     path_list_sagittal = []
     path_list_coronal = []
     for patient in patient_list:
@@ -374,6 +459,15 @@ def get_inference(patient_list):
     return path_list_sagittal, path_list_coronal
     
 def get_multilabel_coronal(patient_list):
+    """
+    Extract multi-label coronal images and masks from a list of patients.
+
+    Args:
+        patient_list (list): A list of patient objects.
+
+    Returns:
+        list: A list of dictionaries containing multi-label coronal images and masks.
+    """
     path_list = []
     for patient in patient_list:
         for index, img in enumerate(patient.multilabel_cor_img):
@@ -382,6 +476,15 @@ def get_multilabel_coronal(patient_list):
     return path_list
 
 def get_multilabel_sagittal(patient_list):
+    """
+    Extract multi-label sagittal images and masks from a list of patients.
+
+    Args:
+        patient_list (list): A list of patient objects.
+
+    Returns:
+        list: A list of dictionaries containing multi-label sagittal images and masks.
+    """
     path_list = []
     for patient in patient_list:
         for index, img in enumerate(patient.multilabel_sag_img):
@@ -389,7 +492,7 @@ def get_multilabel_sagittal(patient_list):
             path_list.append({'img':img, 'mask':mask})
     return path_list
 
-# ------------------ Test ------------------ #
+# ===================== Test ===================== #
 if __name__ == '__main__':
     patient_19_root = os.path.join(mask_root + lowres, listlowres[0])
     patient_19 = Patient(patient_19_root)
