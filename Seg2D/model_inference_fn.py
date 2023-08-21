@@ -104,6 +104,19 @@ def unet_inference(test_dataset, model_path, device, num_classes=2, img_size=(32
     
     
 def unetpp_inference(test_dataset, model_path, device, num_classes=2, img_size=(320, 320)):
+    """
+    Perform inference using the U-Net++ model on a test dataset.
+
+    Args:
+        test_dataset (Dataset): The test dataset to perform inference on.
+        model_path (str): The path to the trained U-Net++ model.
+        device (torch.device): The device to run inference on.
+        num_classes (int, optional): The number of output classes. Default is 2.
+        img_size (tuple, optional): The size of the input images. Default is (320, 320).
+
+    Returns:
+        None
+    """
     # Set Seed
     torch.manual_seed(42)
     
