@@ -79,7 +79,7 @@ def deeplabv3_train_step(model, dataloader, loss_fn, accuracy, optimizer, schedu
     Returns:
         Tuple[float, float]: Training loss and accuracy for the current step.
     """
-    model.train()
+    model.train()   # Training mode - Gradients are changable
     train_loss = 0
     train_acc = 0
 
@@ -135,19 +135,24 @@ def deeplabv3_val_step(model, dataloader, loss_fn, accuracy, device):
     Returns:
         Tuple[float, float]: Validation loss and accuracy for the current step.
     """
-    model.eval()
+    model.eval()    # Evaluation mode - Gradients are not changable
     val_loss = 0
     val_acc = 0
 
+    # Inferencing without gradient calculation
     with torch.inference_mode():
+        # Loop over each batch
         for batch, (img, mask) in enumerate(dataloader):
+            # Push tensor to gpu or cpu
             img = img.to(device)
             mask = mask.to(device)
 
+            # Forward pass
             y_logits = model(img)['out']
             y_pred = torch.sigmoid(y_logits)
             # y_pred = y_logits.argmax(1).unsqueeze(1) 
 
+            # Compute loss and accuracy
             acc = accuracy(y_pred, mask)
             loss = loss_fn(y_logits, mask)
 
@@ -157,9 +162,9 @@ def deeplabv3_val_step(model, dataloader, loss_fn, accuracy, device):
             if batch % int(len(dataloader)*0.2) == 0 and batch != 0:
                 print(f"Batch: {batch}/{len(dataloader)} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
 
+        # Total loss and accuracy for the epoch
         val_loss /= len(dataloader)
         val_acc /= len(dataloader)
-    # print(f"Dice loss: {val_loss:.4f}| Val acc: {val_acc:.4f}")
 
     return val_loss, val_acc
 
