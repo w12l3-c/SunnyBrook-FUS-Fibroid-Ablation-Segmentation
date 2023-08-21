@@ -418,6 +418,18 @@ def gamma_correction_pil(image, gamma=1.0):
 
 # ====================== Inference ====================== #
 def predict(model, dataset, device, img_size):
+    """
+    Generate predictions using a PyTorch model on a dataset.
+
+    Args:
+        model (torch.nn.Module): PyTorch model for segmentation.
+        dataset (iterable): Iterable containing image-mask pairs.
+        device (torch.device): Device to run inference on.
+        img_size (tuple): Size to resize input images.
+
+    Yields:
+        tuple: Tuple containing (image, ground truth mask, predicted mask, accuracy scores, inference time).
+    """
     transform = torchvision.transforms.Compose([
         torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229,0.224,0.225])
