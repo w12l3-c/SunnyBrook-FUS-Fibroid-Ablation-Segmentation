@@ -296,6 +296,16 @@ def create_dataloader(patient, transform, batch_size=4, shuffle=False, num_worke
 # ===================== Collate Functions ===================== #
 # For same size images but keeping the ratio of the original image
 def same_collate(batch):
+    """
+    Custom collate function to handle different images by padding to the same size.
+
+    Args:
+        batch (list): A batch of image-mask pairs.
+
+    Returns:
+        torch.Tensor: The resized images.
+        torch.Tensor: The resized masks.
+    """
     # Separate images and targets
     images, targets = zip(*batch)
 
@@ -340,5 +350,16 @@ def same_collate(batch):
     
 # Collate  function for diffnerent size input images
 def diff_collate(batch):
+    """
+    Custom collate function to handle images with different dimensions.
+    This just basically don't stack them as tensor but as tuple
+
+    Args:
+        batch (list): A batch of image-mask pairs.
+
+    Returns:
+        tuple: The images.
+        tuple: The masks.
+    """
     images, targets = zip(*batch)
     return images, targets
