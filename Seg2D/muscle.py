@@ -70,7 +70,9 @@ val_muscle_dataset = convert_to_PIL(val_muscle_dataset)
 test_muscle_dataset = convert_to_PIL(test_muscle_dataset)
 
 if __name__ == "__main__":
+    # =================== Training =================== #
     try:
+        # Set the tensorboard and save path
         unet_writer = f"runs/Unet_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
         unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         unet_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
@@ -78,15 +80,20 @@ if __name__ == "__main__":
         print(e)
         print('This training sessions failed')
     
+    # =================== Inference =================== #
     try:
         unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Muscle_2023-08-04_10.pth"
-        unet_inference(test_muscle_dataset, unet_save_path, device, display=False)
+        # display=True to show individual images and results, display=False to show the overall stats of entire dataset
+        unet_inference(test_muscle_dataset, unet_save_path, device, display=False)  
     except Exception as e:
         print(e)
         print('This training sessions failed')
     
-    # Trash
+    
+    # Trash Model 
+    # =================== Training & Inference =================== #
     # try:
+    #     # Set the tensorboard and save path
     #     # unetpp_writer = f"runs/UnetPP_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
     #     # unetpp_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/UnetP_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
     #     # unetpp_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unetpp_writer, unetpp_save_path, 'BCE')
@@ -97,7 +104,9 @@ if __name__ == "__main__":
     #     print('This training sessions failed')
 
     # Model ok Compare with Unet later
+    # =================== Training & Inference =================== #
     # try:
+    #     # Set the tensorboard and save path
     #     # deeplabv3plus_writer = f"runs/DeepLabV3P_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
     #     # deeplabv3plus_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Muscle_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
     #     # deeplabv3p_run(train_muscle_dataset, val_muscle_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, deeplabv3plus_writer, deeplabv3plus_save_path, 'BCE')
