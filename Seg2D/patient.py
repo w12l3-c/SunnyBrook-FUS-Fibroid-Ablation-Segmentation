@@ -392,8 +392,11 @@ def get_hipr(patient_list):
     for patient in patient_list:
         # Check if the patient object has 'hipr_img' attribute.
         if hasattr(patient, 'hipr_img'):
+            # Iterate over the right hip images of the patient.
             for index, img in enumerate(patient.hipr_img):
+                # Retrieve the corresponding mask for the current right hip image.
                 mask = patient.hipr_mask[index]
+                # Create a dictionary containing the image and mask and add it to the path_list.
                 path_list.append({'img':img, 'mask':mask})
     
     return path_list
