@@ -1,3 +1,11 @@
+# =============================================================================
+# File Description:
+# ------------------
+# This files contains the inference functions for the models
+# These are being called in the main scipts like spine.py
+# =============================================================================
+
+# =================== Imports =================== #
 import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
@@ -21,8 +29,19 @@ from train import deeplabv3_train_model, unet_train_model
 
 from models import DeepLabV3, Unet, Unetpp, DeepLabV3plus, FPN, MAnet
 
-
+# =================== Inference Functions =================== #
 def deeplabv3_inference(test_dataset, model_path, device):
+    """
+    Perform inference using the DeepLabV3 model on a test dataset.
+
+    Args:
+        test_dataset (Dataset): The test dataset to perform inference on.
+        model_path (str): The path to the trained DeepLabV3 model.
+        device (torch.device): The device to run inference on.
+
+    Returns:
+        None
+    """
     # This is not working currently
     # Prepare dataset
     dataset = test_dataset
