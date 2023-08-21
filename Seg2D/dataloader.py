@@ -217,10 +217,11 @@ def display_multi_mask(mask, id2label, color_map):
     return Image.fromarray(mask_canva.astype(np.uint8)) # convert to PIL image
         
 # ===================== Dataset & DataLoader ===================== #
+# Custom Pytorch Dataset Class
 class PatientDataset2D(torch.utils.data.Dataset):
     def __init__(self, pairs, transform=None):
         """
-        Initialize a 2D patient dataset.
+        Initialize a custom pytorch patient dataset.
 
         Args:
             pairs (list): A list of dictionaries containing image and mask paths.
@@ -269,7 +270,25 @@ class PatientDataset2D(torch.utils.data.Dataset):
 
 
 def create_dataloader(patient, transform, batch_size=4, shuffle=False, num_workers=0, pin_memory=False, drop_last=False, collate_fn=None):
+    """
+    Create a DataLoader for a patient dataset.
+
+    Args:
+        patient (list): A list of patient data.
+        transform (callable): A transform to apply to the images and masks.
+        batch_size (int, optional): The batch size. Default is 4.
+        shuffle (bool, optional): Whether to shuffle the dataset. Default is False.
+        num_workers (int, optional): Number of workers for data loading. Default is 0.
+        pin_memory (bool, optional): Whether to use pinned memory. Default is False.
+        drop_last (bool, optional): Whether to drop the last incomplete batch. Default is False.
+        collate_fn (callable, optional): Custom collate function. Default is None.
+
+    Returns:
+        torch.utils.data.DataLoader: A DataLoader for the patient dataset.
+    """
+    # Create a dataset from the patient data
     dataset = PatientDataset2D(patient, transform)
+    # Create a pytorch dataloader from custom dataset
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers, pin_memory=pin_memory, drop_last=drop_last, collate_fn=collate_fn)
     return dataloader
 
