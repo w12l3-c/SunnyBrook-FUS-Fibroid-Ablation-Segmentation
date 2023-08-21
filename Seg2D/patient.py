@@ -224,6 +224,10 @@ class Patient:
         self.skin_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir[start-1:end]]
         
     def muscle_seg(self):
+        '''
+        Extracts muscle masks and corresponding images.
+        Create the muscle image and mask list.
+        '''
         # Muscle masks directory
         self.muscle_dir = os.path.join(self.mask_dir, 'Muscle')
         self.muscle_listdir = sorted(os.listdir(self.muscle_dir))
@@ -237,6 +241,9 @@ class Patient:
         self.muscle_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir[start-1:end]]
 
     def inference_seg(self):
+        '''
+        Creating image folder for coronal and sagittal
+        '''
         # Sagittal Dataset
         self.sagittal_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir]
 
