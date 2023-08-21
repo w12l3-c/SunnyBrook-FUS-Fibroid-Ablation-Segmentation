@@ -606,29 +606,23 @@ def beit3_train_model(model, dataset_dict, epochs, batch_size, compute_metrics, 
         compute_metrics: Function to compute metrics.
         push_to_hub (bool): Whether to push the model to the Hugging Face Hub (optional).
     """
+    # Define training arguments for model training
     training_args = TrainingArguments(
-        output_dir="/mnt/HDD_1TB/Wallace/Code/Seg2D/predictions",
-        # learning_rate=1e-3,
-        num_train_epochs=epochs,
-        per_device_train_batch_size=batch_size,
-        per_device_eval_batch_size=batch_size,
-        # save_total_limit=3,
-        # evaluation_strategy="steps",
-        save_strategy="epochs",
-        # save_steps=20,
-        # eval_steps=20,
-        # logging_steps=1,
-        # eval_accumulation_steps=5,
-        # remove_unused_columns=False,
-        # push_to_hub=push_to_hub,
+        output_dir="/mnt/HDD_1TB/Wallace/Code/Seg2D/predictions",  # Directory to save model training outputs
+        num_train_epochs=epochs,                # Number of training epochs
+        per_device_train_batch_size=batch_size, # Batch size for training data
+        per_device_eval_batch_size=batch_size,  # Batch size for evaluation data
+        save_strategy="epochs",                # Strategy to save model checkpoints after each epoch
     )
-    
+
+    # Create a Trainer instance for model training
     trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=dataset_dict["train"],
-        eval_dataset=dataset_dict["val"],
-        compute_metrics=compute_metrics,
+        model=model,                               # The model to be trained
+        args=training_args,                        # Training arguments defined above
+        train_dataset=dataset_dict["train"],       # Training dataset
+        eval_dataset=dataset_dict["val"],         # Evaluation dataset
+        compute_metrics=compute_metrics,          # Function to compute evaluation metrics
     )
-    
+
+    # Start training the model
     trainer.train()
