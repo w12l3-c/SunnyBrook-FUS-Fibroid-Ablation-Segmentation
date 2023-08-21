@@ -489,22 +489,24 @@ def val_step(model, dataloader, loss_fn, accuracy, weight_fn, device):
     Returns:
         Tuple[float, float]: Validation loss and accuracy for the current step.
     """
-    model.eval()
+    model.eval()    # Evaluation mode - Gradients are not changable
     val_loss = 0
     val_acc = 0
 
+    # Inference
     with torch.inference_mode():
+        # Loop over each batch
         for batch, (img, mask) in enumerate(dataloader):
+            # Push tensor to cpu or gpu
             img = img.to(device)
             mask = mask.to(device)
-            mask = mask.squeeze()
 
-            pos_weight = weight_fn(mask).to(device)
-
+            # Forward pass
             y_logits = model(img)
             y_pred = torch.softmax(y_logits, dim=1).argmax(dim=1).float()
 
-            acc = accuracy(y_pred, mask)
+            # Compute loss and accuracy
+            acc = accuracy(y_pred, mask )
         
             y_logits = y_logits.permute(0, 2, 3, 1)
             y_logits = y_logits.view(-1, 8)
@@ -518,11 +520,11 @@ def val_step(model, dataloader, loss_fn, accuracy, weight_fn, device):
             if batch % 4 == 0 and batch != 0:
                 print(f"Progress: {batch}/{len(dataloader)} | Val loss: {val_loss:.4f} | Val acc: {val_acc:.4f}")
 
+        # Compute average loss and accuracy of this epoch
         val_loss /= len(dataloader)
         val_acc /= len(dataloader)
 
     return val_loss, val_acc
-
 
 # ==================== Training Loop ==================== #
 def train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy, optimizer, scheduler, weight_fn, device, epochs=10, writer=None):
@@ -545,7 +547,7 @@ def train_model(model, train_dataloader, val_dataloader, loss_fn, accuracy, opti
     Returns:
         Tuple[dict, dict]: Best model state dict and training results (loss and accuracy).
     """
-        # Initialize results in a dictionary
+    # Initialize results in a dictionary
     results = { "train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
     
     # Initialize early stopper
