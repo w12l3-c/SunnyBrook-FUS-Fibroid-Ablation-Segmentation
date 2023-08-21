@@ -173,6 +173,10 @@ class Patient:
         self.bowel_img = [os.path.join(self.sagittal, x) for x in self.sagittal_listdir[start-1:end]]
         
     def hipl_seg(self):
+        '''
+        Extracts left hip masks and corresponding images.
+        Create the left hip image and mask list.
+        '''
         # Left Hip masks directory
         self.hipl_dir = os.path.join(self.mask_dir, 'hip_L')
         self.hipl_listdir = sorted(os.listdir(self.hipl_dir))
