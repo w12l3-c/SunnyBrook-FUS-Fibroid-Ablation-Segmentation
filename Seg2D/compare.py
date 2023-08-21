@@ -42,43 +42,54 @@ def sag_compare_unsuper_super(dataset):
     Args:
         dataset (list): A list of image data containing 'img' key.
     """
+    # Loop how many images you want to compare
     for i in range(2):
+        # Grab dataset image and mask
         data = dataset[i + np.random.randint(0, len(dataset))]
         image = data['img']
-        image = image.convert('RGB')
+        image = image.convert('RGB')    # Convert to RGB
 
         fig, ax = plt.subplots(1, 4, figsize=(20, 5))
 
+        # Data Augmentation transformations
         transform = transforms.Compose([
             torchvision.transforms.ToTensor(),
             torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
-
+        
+        # =================== Supervised =================== #
         sag_model.eval()
         with torch.inference_mode():
+            # Preprocessing
             img = image.convert('RGB')
             resized_img = img.resize((320, 320))
             transformed_img = transform(resized_img)
+
             start_time = time.time()
             logits = sag_model(transformed_img.unsqueeze(0))
             ml_time = time.time() - start_time
+            
             pred = torch.softmax(logits, dim=1).argmax(dim=1)
             pred = pred.squeeze(0).numpy()
             pred = cv2.resize(pred, (img.size[0], img.size[1]))
             pred_edge = cv2.Canny(pred.astype(np.uint8), 100, 200)
             pred_edge_mask = pred_edge > 0
 
+            # Make the output green
             pred_mask = pred > 0
             pred_green = np.zeros((pred.shape[0], pred.shape[1], 3))
             pred_green[pred_mask] = [0, 255, 0]
 
+        # =================== Unsupervised =================== #
         np_image = np.asarray(image)
+        # Data Augmentation and Add information
         for i in range(1):
             jitter = cv2.convertScaleAbs(np_image, alpha=np.random.randint(1, 4), beta=np.random.randint(10, 20))
             jitter = cv2.cvtColor(jitter, cv2.COLOR_RGB2GRAY)
             inverse = cv2.bitwise_not(jitter)
             np_image = np.concatenate((np_image, jitter.reshape(np_image.shape[0], np_image.shape[1], 1),
                                        inverse.reshape(np_image.shape[0], np_image.shape[1], 1)), axis=2)
+        
         start_time = time.time()
         kmean_pred = KMean.kmeans_segmentation(np.asarray(np_image), num_class=8)
         kmean_time = time.time() - start_time
@@ -104,7 +115,9 @@ def cor_compare(dataset):
     Args:
         dataset (list): A list of image data containing 'img' key.
     """
+    # Loop how many images you want to compare
     for i in range(2):
+        # Grab dataset image and mask
         data = dataset[i + np.random.randint(0, len(dataset))]
         image = data['img']
         image = image.convert('RGB')
@@ -117,6 +130,7 @@ def cor_compare(dataset):
             torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
 
+        # =================== Supervised =================== #
         sag_model.eval()
         with torch.inference_mode():
             transformed_img = transform(image)
@@ -131,6 +145,7 @@ def cor_compare(dataset):
             pred_green = np.zeros((pred.shape[0], pred.shape[1], 3))
             pred_green[pred_mask] = [0, 255, 0]
 
+        # =================== Unsupervised =================== #
         kmean_pred = KMean.kmeans_segmentation(np.asarray(image), num_class=3)
         kmean_pred[kmean_pred > 10] = 255
 
