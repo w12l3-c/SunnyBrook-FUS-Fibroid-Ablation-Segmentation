@@ -73,7 +73,10 @@ train_cor_dataset = convert_to_PIL_multi(train_cor_dataset, LABEL2ID)
 val_cor_dataset = convert_to_PIL_multi(val_cor_dataset, LABEL2ID)
 test_cor_dataset = convert_to_PIL_multi(test_cor_dataset, LABEL2ID)
 
+# Convert datasets to HuggingFace Dataset format
 dataset_dict = Segformer.create_huggingface_dataset(train_cor_dataset, val_cor_dataset, test_cor_dataset)
+
+# Create Model, Image Feature Extractor and Image Processor
 beit3 = Segformer.Segformer(path, ID2LABEL, LABEL2ID)
 
 # Model structure
@@ -85,7 +88,7 @@ if __name__ == '__main__':
     
     # =================== Training =================== #
     try:
-        # Set the writer and save path
+        # Set the tensorboard and save path
         unet_writer = f"runs/Unet_Coronal_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
         unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Coronal_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         unet_run(train_cor_dataset, val_cor_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
