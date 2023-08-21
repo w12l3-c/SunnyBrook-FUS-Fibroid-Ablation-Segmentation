@@ -429,17 +429,21 @@ def train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, weigh
     Returns:
         Tuple[float, float]: Training loss and accuracy for the current step.
     """
-    model.train()
+    model.train()   # Training mode - Gradients are changable
     train_loss = 0
     train_acc = 0
 
+    # Loop over each batch
     for batch, (img, mask) in enumerate(dataloader):
+        # Push tensor to cpu or gpu
         img = img.to(device)
         mask = mask.to(device)
 
+        # Forward pass
         y_logits = model(img)
         y_pred = torch.softmax(y_logits, dim=1).argmax(dim=1).float()
 
+        # Compute loss and accuracy
         acc = accuracy(y_pred, mask)
         
         y_logits = y_logits.permute(0, 2, 3, 1)
@@ -451,6 +455,7 @@ def train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, weigh
         train_acc += acc.item()
         train_loss += loss.item()
 
+        # Backward pass
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -458,8 +463,11 @@ def train_step(model, dataloader, loss_fn, accuracy, optimizer, scheduler, weigh
         if batch % int(len(dataloader)*0.2) == 0 and batch != 0:
             print(f"Progress: {batch}/{len(dataloader)} | Train loss: {train_loss:.4f} | Train acc: {train_acc:.4f}")
 
+    # Compute average loss and accuracy of this epoch
     train_loss /= len(dataloader)
     train_acc /= len(dataloader)
+    
+    # Update the learning rate with scheduler
     scheduler.step(train_loss)
 
     return train_loss, train_acc
