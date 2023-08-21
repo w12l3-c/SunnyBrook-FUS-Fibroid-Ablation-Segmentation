@@ -283,6 +283,15 @@ class Patient:
             
 # ===================== Create Patient List ===================== #
 def create_patient_list(path_list=listsiemens):
+    """
+    Create a list of Patient objects from a list of root paths.
+
+    Args:
+        path_list (list): A list of root paths to patient data.
+
+    Returns:
+        list: A list of Patient objects.
+    """
     # Full list of patient images
     patient_list = []
     
