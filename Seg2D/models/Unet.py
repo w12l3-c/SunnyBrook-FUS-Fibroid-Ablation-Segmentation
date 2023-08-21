@@ -424,7 +424,7 @@ def predict_UNET(model, dataset, device, img_size=(320, 320), display=True):
         
         plt.show()
         
-        save_path = f'metrics_{uuid.uuid1}.png'
+        save_path = f'predictions/metrics_{uuid.uuid1}.png'
         fig.savefig(save_path)
         print(f'Metrics saved to {save_path}')
         
