@@ -23,6 +23,76 @@ from PIL import Image, ImageOps, ImageEnhance
 import segmentation_models_pytorch as smp
 from segmentation_models_pytorch.encoders import get_preprocessing_params
 
+# ================== UNet++ ================== #
+class conv_block(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=3, padding=1, stride=1):
+        super(conv_block, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels, out_channels, kernel_size, stride, padding),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True)
+        )
+        self.dropout = nn.Dropout(0.2)
+        
+    def forward(self, x):
+        x = self.conv(x)
+        return self.dropout(x)
+
+class Unetpp(nn.Module):
+    def __init__(self, in_channels, out_channels, dims=[64, 128, 256, 512, 1024]):
+        super().__init__()
+        self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+        self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+        
+        self.conv00 = conv_block(in_channels, dims[0])
+        self.conv10 = conv_block(dims[0], dims[1])
+        self.conv20 = conv_block(dims[1], dims[2])
+        self.conv30 = conv_block(dims[2], dims[3])
+        self.conv40 = conv_block(dims[3], dims[4])
+        
+        self.conv01 = conv_block(dims[0]+dims[1], dims[0])
+        self.conv11 = conv_block(dims[1]+dims[2], dims[1])
+        self.conv21 = conv_block(dims[2]+dims[3], dims[2])
+        self.conv31 = conv_block(dims[3]+dims[4], dims[3])
+        
+        self.conv02 = conv_block(dims[0]*2+dims[1], dims[0])
+        self.conv12 = conv_block(dims[1]*2+dims[2], dims[1])
+        self.conv22 = conv_block(dims[2]*2+dims[3], dims[2])
+        
+        self.conv03 = conv_block(dims[0]*3+dims[1], dims[0])
+        self.conv13 = conv_block(dims[1]*3+dims[2], dims[1])
+        
+        self.conv04 = conv_block(dims[0]*4+dims[1], dims[0])
+        
+    def forward(self, x):
+        x00 = self.conv00(x)   
+        x10 = self.conv10(self.maxpool(x00))
+        x20 = self.conv20(self.maxpool(x10))
+        x30 = self.conv30(self.maxpool(x20))
+        x40 = self.conv40(self.maxpool(x30))
+        
+        x01 = self.conv01(torch.cat([x00, self.upsample(x10)], dim=1))
+        x11 = self.conv11(torch.cat([x10, self.upsample(x20)], dim=1))
+        x21 = self.conv21(torch.cat([x20, self.upsample(x30)], dim=1))
+        x31 = self.conv31(torch.cat([x30, self.upsample(x40)], dim=1))
+        
+        x02 = self.conv02(torch.cat([x00, x01, self.upsample(x11)], dim=1))
+        x12 = self.conv12(torch.cat([x10, x11, self.upsample(x21)], dim=1))
+        x22 = self.conv22(torch.cat([x20, x21, self.upsample(x31)], dim=1))
+        
+        x03 = self.conv03(torch.cat([x00, x01, x02, self.upsample(x12)], dim=1))
+        x13 = self.conv13(torch.cat([x10, x11, x12, self.upsample(x22)], dim=1))
+        
+        x04 = self.conv04(torch.cat([x00, x01, x02, x03, self.upsample(x13)], dim=1))
+        
+        return [x01, x02, x03, x04]
+        
+        
+        
+
 # ===================== Pytorch UNet++ ===================== #
 def auto_UNETPP(in_channels, num_classes):
     model = smp.UnetPlusPlus(
