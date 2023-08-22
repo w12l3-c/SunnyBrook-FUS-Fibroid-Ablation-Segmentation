@@ -27,6 +27,16 @@ from segmentation_models_pytorch.encoders import get_preprocessing_params
 
 # ===================== Pytorch MAnet ===================== #
 def auto_MANET(in_channels, num_classes):
+    """
+    Create a MAnet model with the specified number of input channels and output classes.
+
+    Args:
+        in_channels (int): Number of input channels.
+        num_classes (int): Number of output classes.
+
+    Returns:
+        torch.nn.Module: MAnet model.
+    """
     model = smp.MAnet(
         encoder_name="resnet34",       
         encoder_weights="imagenet",    
