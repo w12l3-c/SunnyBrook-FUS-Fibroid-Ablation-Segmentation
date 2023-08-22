@@ -625,7 +625,7 @@ def predict_UNET(model, dataset, device, img_size=(320, 320), display=True):
         plt.show()
         
         # Save the metrics
-        save_path = f'predictions/metrics_{uuid.uuid1}.png'
+        save_path = f'predictions/metrics_{uuid.uuid1}.png' # uuid is a unique string generator
         fig.savefig(save_path)
         print(f'Metrics saved to {save_path}')
         
