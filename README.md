@@ -13,7 +13,8 @@ Ultrasound will travel at different speed in the skin, fat, muscle, fibroid, and
 <br>
 
 # Dataset ℹ️
-Consist of 8K image-mask pairs manually segmented.
+Consist of 8K image-mask pairs manually segmented. <br>
+Due to privacy reasons, this dataset is owned by sunnybrook research institue
 
 Regions include:
 - Spine
@@ -106,24 +107,27 @@ For other hyperparmeters like learning rate, type of model, decay rate, optimize
 <br>
 
 ## Model Options
-- Unet
-- Unet++
-- DeepLabv3
-- DeepLabv3+
-- KMeans
+- [Unet](https://arxiv.org/pdf/1505.04597.pdf)
+- [Unet++](https://arxiv.org/pdf/1807.10165.pdf)
+- [DeepLabv3](https://arxiv.org/pdf/1706.05587.pdf)
+- [DeepLabv3+](https://arxiv.org/pdf/1802.02611.pdf)
+- [KMeans](https://en.wikipedia.org/wiki/K-means_clustering)
 
 Haven't debug:
-- Beit3
-- Segformer
-- FPN
-- MAnet
+- [Beit3](https://arxiv.org/pdf/2208.10442.pdf)
+- [Segformer](https://arxiv.org/pdf/2105.15203.pdf)
+- [FPN](https://arxiv.org/pdf/1612.03144.pdf)
+- [MANet](https://arxiv.org/pdf/2009.02130.pdf)
 
 More Investigation:
-- SAM
+- [SAM](https://arxiv.org/pdf/2304.02643.pdf)
 
 <br>
 
-## Examples
+## Example Output
+<img src="pictures/spine1.png" align='center'>
+<img src="pictures/spine2.png" align='center'>
+
 
 <br> 
 
@@ -139,9 +143,6 @@ More Investigation:
 Move into the Seg3D directory
 ```
 $ cd Seg3D
-```
-You can tune the hyperparameters constants in the run.py file
-```
 $ python3 run.py
 ```
-
+You can tune the hyperparameters constants in the run.py file
