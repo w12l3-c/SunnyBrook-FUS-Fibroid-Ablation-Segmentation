@@ -1,3 +1,11 @@
+# ===================================================================================================
+# File Description:
+# ------------------
+# This file is used for running the gradio demo
+# It currently only have spine segmentation since I made it very early
+# ===================================================================================================
+
+# =================== Imports =================== #
 import gradio as gr
 import numpy as np
 import cv2
