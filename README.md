@@ -70,6 +70,7 @@ To deactivate the virtural environment:
 ```
 $ deactivate
 ```
+<br>
 
 # 2D Slice by Slice Segmentation
 Individual model per region: Spine, Bowel, Skin, Muscle, Left and Right Hip
@@ -100,8 +101,9 @@ For other hyperparmeters like learning rate, type of model, decay rate, optimize
 - If you want to add features into the model go to `models/` directory. 
 - If you want to change the hyperparmeters go to `model_run_fn.py` or `model_inference_fn.py`.
 
+<h3 align='center'>For more file information: <a src='https://docs.google.com/document/d/1qI04D95TeWGrsUwWzpSTaq1j02bujT7scYXWUssVvVw/edit?usp=sharing'>Google Docs</a></h3>
 
-
+<br>
 
 ## Model Options
 - Unet
@@ -119,8 +121,11 @@ Haven't debug:
 More Investigation:
 - SAM
 
+<br>
 
+## Examples
 
+<br> 
 
 # 3D Volumetric Segmentation 
 3D Volumetric Segmentation using [Vnet](https://arxiv.org/pdf/1606.04797.pdf) 
