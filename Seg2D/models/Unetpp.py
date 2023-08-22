@@ -14,6 +14,7 @@ import torchvision
 import os
 import time
 import cv2
+import uuid
 import numpy as np
 import matplotlib.pyplot as plt
 import pydicom
@@ -62,45 +63,108 @@ def prepare_scheduler(optimizer, factor=0.1, patience=10, min_lr=1e-5, verbose=T
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=factor, patience=patience, min_lr=min_lr, verbose=verbose)
     return scheduler
 
-# ===================== Accuracy ===================== #
+# ====================== Accuracy ====================== #
 def accuracy_iou(pred, target):
-    pred_mask = pred > 0.5
+    """
+    Calculate Intersection over Union (IoU) accuracy between predicted and target binary masks.
+
+    Args:
+        pred (torch.Tensor): Predicted binary mask.
+        target (torch.Tensor): Target binary mask.
+
+    Returns:
+        torch.Tensor: IoU accuracy score.
+    """
+    # Create mask for pred and targets
+    pred_mask = pred > 0.5  
     target_mask = target > 0.5
 
+    # Calculate intersection and union base on the mask AND & OR operation
     intersection = torch.sum(pred_mask * target_mask)
     union = torch.sum(pred_mask + target_mask)
 
+    # Calculate IoU
     iou = intersection / union
     return iou
 
 def accuracy_intersect(pred, target):
+    """
+    Calculate accuracy based on the intersection of predicted and target binary masks.
+
+    Args:
+        pred (torch.Tensor): Predicted binary mask.
+        target (torch.Tensor): Target binary mask.
+
+    Returns:
+        torch.Tensor: Intersection accuracy score.
+    """
+    # Create mask for pred and targets  
     pred_mask = pred > 0.5
     target_mask = target > 0.5
+    
+    # Using the AND operation to calculate the intersection
     intersection = torch.sum(pred_mask * target_mask)
     pred_total = torch.sum(pred_mask == True)
     
     return intersection / pred_total
 
 def accuracy_basic(pred, target):
+    """
+    Calculate basic accuracy between predicted and target binary masks.
+
+    Args:
+        pred (torch.Tensor): Predicted binary mask.
+        target (torch.Tensor): Target binary mask.
+
+    Returns:
+        torch.Tensor: Basic accuracy score.
+    """
+    # Create mask for pred and targets
     pred = pred > 0.5
     target = target > 0.5
+    # Simply sum up the number of correct pixels and divide by the total number of pixels
     correct = torch.sum(pred == target)
     return correct / pred.numel()
 
 def accuracy_dice(pred, target):
+    """
+    Calculate Dice coefficient accuracy between predicted and target binary masks.
+
+    Args:
+        pred (torch.Tensor): Predicted binary mask.
+        target (torch.Tensor): Target binary mask.
+
+    Returns:
+        torch.Tensor: Dice coefficient accuracy score.
+    """
+    # Create mask for pred and targets
     pred_mask = pred > 0.5
     target_mask = target > 0.5
 
+    # Calculate intersection and union base on the mask AND & OR operation
     intersection = torch.sum(pred_mask * target_mask)
     total = torch.sum(pred_mask) + torch.sum(target_mask)
 
+    # Dice coefficient formula
     dice = 2 * intersection / total
     return dice
 
 def accuracy_iou_multi(pred, target):
-    pred = torch.argmax(pred, dim=1)
+    """
+    Calculate Intersection over Union (IoU) accuracy for multiple classes in predicted and target masks.
+
+    Args:
+        pred (torch.Tensor): Predicted multi-class mask.
+        target (torch.Tensor): Target multi-class mask.
+
+    Returns:
+        torch.Tensor: Mean IoU accuracy score across classes.
+    """
+    pred = torch.argmax(pred, dim=1)    
     ious = []
+    # Loop through all classes
     for i in torch.unique(target):
+        # Same operation as th regular IOU
         pred_mask = pred == i
         target_mask = target == i
 
@@ -110,50 +174,99 @@ def accuracy_iou_multi(pred, target):
         iou = intersection / union
         ious.append(iou)
     
+    # Return the mean of all classes' IOU
     return torch.mean(torch.tensor(ious))
 
 
-# ===================== Class Weights ===================== #
+# ====================== Class Weights ======================--- #
 def calculate_weights(mask):
-  total = mask.numel()
-  pos = torch.sum(mask > 0.5)
-  return total/pos
+    """
+    Calculate class weights based on the provided mask.
+
+    Args:
+        mask (torch.Tensor): Binary mask.
+
+    Returns:
+        torch.Tensor: Class weights.
+    """ 
+    total = mask.numel()
+    pos = torch.sum(mask > 0.5)
+    return total/pos
 
 # ====================== Gamma Correction ====================== #
 def gamma_correction_cv2(image, gamma=1.0):
+    """
+    Apply gamma correction to an image using OpenCV.
+
+    Args:
+        image (numpy.ndarray): Input image.
+        gamma (float): Gamma correction factor (default is 1.0).
+
+    Returns:
+        numpy.ndarray: Gamma-corrected image.
+    """
     inv_gamma = 1.0 / gamma
     table = np.array([((i / 255.0) ** inv_gamma) * 255 for i in np.arange(0, 256)])
     return cv2.LUT(image, table.astype(np.uint8))
 
 def gamma_correction_pil(image, gamma=1.0):
+    """
+    Apply gamma correction to an image using PIL (Python Imaging Library).
+
+    Args:
+        image (PIL.Image.Image): Input image.
+        gamma (float): Gamma correction factor (default is 1.0).
+
+    Returns:
+        PIL.Image.Image: Gamma-corrected image.
+    """
     enhancer = ImageEnhance.Brightness(image)
     gamma_corrected_image = enhancer.enhance(gamma)
     return gamma_corrected_image
 
 # ====================== Inference ====================== #
 def predict(model, dataset, device, img_size):
+    """
+    Generate predictions using a PyTorch model on a dataset.
+
+    Args:
+        model (torch.nn.Module): PyTorch model for segmentation.
+        dataset (iterable): Iterable containing image-mask pairs.
+        device (torch.device): Device to run inference on.
+        img_size (tuple): Size to resize input images.
+
+    Yields:
+        tuple: Tuple containing (image, ground truth mask, predicted mask, accuracy scores, inference time).
+    """
+    # Transformation
     transform = torchvision.transforms.Compose([
         torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229,0.224,0.225])
     ])
     
+    # Set model to evaluation mode
     model.eval()
+    # Inference mode
     with torch.no_grad():
         for pair in dataset:
+            # Get image and mask
             image = pair['img']
             mask = pair['mask']
             
+            # Preprocessing
             image = image.convert('RGB')
             resized_image = image.resize(img_size)
             resized_image = gamma_correction_pil(resized_image, gamma=1.5)
             #resized_image = ImageOps.equalize(resized_image)
             transformed_image = transform(resized_image).to(device)
             
+            # Inference
             start_time = time.time()
             logits = model(transformed_image.unsqueeze(0))
             pred = torch.softmax(logits, dim=1).argmax(dim=1).float()
             end_time = time.time()
             
+            # Calculate accuracy and metrics
             totensor = torchvision.transforms.ToTensor()
             acc_iou = accuracy_iou(pred, totensor(mask.convert('L').resize(img_size)).to(device))
             acc_basic = accuracy_basic(pred, totensor(mask.convert('L').resize(img_size)).to(device))
@@ -162,9 +275,11 @@ def predict(model, dataset, device, img_size):
             pred = pred.squeeze().cpu().numpy() * 255
             pred = cv2.resize(pred, img_size)
             
+            # Resize mask
             if mask is not None:
                 mask = mask.resize(img_size)
             
+            # Calculate inference time
             inference_time = end_time - start_time
             
             yield (image, mask, pred, (acc_iou, acc_basic, acc_dice), inference_time)
@@ -284,6 +399,6 @@ def predict_UNETPP(model, dataset, device, img_size=(320, 320), display=True):
         
         plt.show()
         
-        save_path = f'metrics_{uuid.uuid1}.png'
+        save_path = f'predictions/metrics_{uuid.uuid1}.png'
         fig.savefig(save_path)
         print(f'Metrics saved to {save_path}')
