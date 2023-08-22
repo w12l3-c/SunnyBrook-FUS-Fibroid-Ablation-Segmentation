@@ -99,7 +99,7 @@ def compute_metrics(pred):
         metrics = metric._compute(
                 predictions=pred_labels,
                 references=labels,
-                num_labels=len(id2label),
+                num_labels=7,
                 ignore_index=0,
             )
         
