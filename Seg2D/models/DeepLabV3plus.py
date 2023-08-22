@@ -25,7 +25,16 @@ from segmentation_models_pytorch.encoders import get_preprocessing_params
 
 # =================== DeepLabV3+ =================== #
 def auto_DEEPLABV3P(in_channels, num_classes, encoder_name='resnet50', encoder_weights='imagenet'):
-    
+    """
+    Create a UNet model with the specified number of input channels and output classes.
+
+    Args:
+        in_channels (int): Number of input channels.
+        num_classes (int): Number of output classes.
+
+    Returns:
+        torch.nn.Module: UNet model.
+    """
     model = smp.DeepLabV3Plus(
         encoder_name=encoder_name,       
         encoder_weights=encoder_weights,    
