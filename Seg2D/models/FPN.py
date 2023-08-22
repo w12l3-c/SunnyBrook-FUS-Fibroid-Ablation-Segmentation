@@ -17,13 +17,24 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pydicom
-from PIL import Image
+import uuid
+from PIL import Image, ImageEnhance
 
 import segmentation_models_pytorch as smp
 from segmentation_models_pytorch.encoders import get_preprocessing_params
 
 # ======================= Pytorch FPN ======================= #
 def auto_FPN(in_channels, num_classes):
+    """
+    Create a FPN model with the specified number of input channels and output classes.
+
+    Args:
+        in_channels (int): Number of input channels.
+        num_classes (int): Number of output classes.
+
+    Returns:
+        torch.nn.Module: FPN model.
+    """
     model = smp.FPN(
         encoder_name="resnet101",       
         encoder_weights="imagenet",    
@@ -170,11 +181,28 @@ def predict(model, dataset, device, img_size):
             yield (image, mask, pred, (acc_iou, acc_basic, acc_dice), inference_time)
             
 def predict_FPN(model, dataset, device, img_size=(320, 320), display=True):
+    """
+    Perform predictions using a UNet model on a dataset and optionally display the results.
+    If `display` is `True`, the user will be prompted to save the predictions of individual inference.
+    If `display` is `False`, it will save a figure where it find the overall metrics for the entire dataset.
+
+    Args:
+        model (torch.nn.Module): UNet model for segmentation.
+        dataset (iterable): Iterable containing image-mask pairs.
+        device (torch.device): Device to run inference on.
+        img_size (tuple): Size to resize input images.
+        display (bool): Whether to display results interactively (default is True).
+    """
+    # Create generator for predictions
     generator = predict(model, dataset, device, img_size)
+    
+    # If display is True, prompt user to save predictions
     if display:
+        # Prompt user to save predictions
         save = input('Save predictions? (y/n): ')
         directory = '/mnt/HDD_1TB/Wallace/Code/Seg2D/predictions/'
-    
+
+        # Create directory if it doesn't exist
         if save == 'y':
             if os.path.exists(directory):
                 print('Directory exists -- Continue')
@@ -182,15 +210,20 @@ def predict_FPN(model, dataset, device, img_size=(320, 320), display=True):
                 os.makedirs(directory)
                 print('Directory created')
 
+        # Iterate over generator
         for i, prediction in enumerate(generator):
+            # Unpack prediction
             image, mask, pred, acc, time = prediction
             acc_iou, acc_basic, acc_dice = acc
             # image = gamma_correction_pil(image, gamma=1.5)  
             
+            # If the mask is avaliable do mask operations
             if mask is not None:
+                # Grab the contour of the mask and prediction
                 mask_edge = cv2.Canny(np.asarray(mask), 100, 200)
                 pred_edge = cv2.Canny(pred.astype(np.uint8), 100, 200)
                 
+                # Recolor them into red and green
                 mask_edge_red = np.zeros((mask_edge.shape[0], mask_edge.shape[1], 3))
                 mask_edge_red[mask_edge > 0] = [255, 0, 0]
                 mask_edge_red = mask_edge_red.astype(np.uint8)
@@ -198,9 +231,11 @@ def predict_FPN(model, dataset, device, img_size=(320, 320), display=True):
                 pred_edge_green[pred_edge > 0] = [0, 255, 0]
                 pred_edge_green = pred_edge_green.astype(np.uint8)
                 
+                # Overlay them such that the overlapping becomes yellow
                 edge_overlay = mask_edge_red + pred_edge_green
                 edge_overlay = edge_overlay.astype(np.uint8)
                 
+                # Recolouring the prediction and mask in green and red respectively
                 mask_red = np.zeros((mask.size[1], mask.size[0], 3))
                 pred_green = np.zeros((mask.size[1], mask.size[0], 3))
                 
@@ -213,9 +248,11 @@ def predict_FPN(model, dataset, device, img_size=(320, 320), display=True):
                 mask_red = mask_red.astype(np.uint8)
                 pred_green = pred_green.astype(np.uint8)
                 
+                # Overlay them so make the overlapping yellow
                 mask_overlay = mask_red + pred_green
                 mask_overlay = mask_overlay.astype(np.uint8)
             
+            # Grid plot of image, mask, and prediction
             fig, ax = plt.subplots(2,3, figsize=(20,15))
             
             ax[0][0].imshow(image)
@@ -246,23 +283,29 @@ def predict_FPN(model, dataset, device, img_size=(320, 320), display=True):
             fig.suptitle(f'Inference Time: {time:.4f} seconds')
             plt.show()
             
+            # Save the prediction if user wants to
             if save == 'y':
                 filename = f"predictions/mask_{i}.jpg"
                 # cv2.imwrite(os.path.join(directory, filename), pred)
                 fig.savefig(filename)
-                
+            
+            # Prompt user to exit every 10 images
             if i % 10 == 0:
                 quit = input('Exit? (y/n): ')
                 if quit == 'y':
                     break
             
         print('Inference Complete')
-        
+    
+    # If display is False, return accuracy metrics
     else:
+        # Save accuracy metrics
         acc_ious = []
         acc_basics = []
         acc_dices = []
         times = []
+        
+        # Iterate over generator
         for prediction in generator:
             image, mask, pred, acc, time = prediction
             acc_iou, acc_basic, acc_dice = acc
@@ -270,7 +313,8 @@ def predict_FPN(model, dataset, device, img_size=(320, 320), display=True):
             acc_basics.append(acc_basic.item())
             acc_dices.append(acc_dice.item())
             times.append(time)
-            
+        
+        # Plot accuracy metrics
         fig, ax = plt.subplots(2, 2, figsize=(20,10))
         
         ax[0][0].set_title(f'Accuracy (IOU) | Median:{np.median(np.array(acc_ious))*100:.4f}')
@@ -284,6 +328,7 @@ def predict_FPN(model, dataset, device, img_size=(320, 320), display=True):
         
         plt.show()
         
-        save_path = f'metrics_{uuid.uuid1}.png'
+        # Save the metrics
+        save_path = f'predictions/metrics_{uuid.uuid1}.png' # uuid is a unique string generator
         fig.savefig(save_path)
         print(f'Metrics saved to {save_path}')
