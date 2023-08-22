@@ -7,10 +7,12 @@ An alternative option for non invasive treatment is using MR guided **high-inten
 Ultrasound will travel at different speed in the skin, fat, muscle, fibroid, and bone tissue due to different acoustic properties, therefore it is important to run simulations using 3D volumes created by 2D MRI slices.
 
 <p align='center'>
-    <img src='https://arrayus.ca/wp-content/uploads/2021/04/Arrayus_treatment_illustration_3_desktop.jpg'> 
+    <img src='https://arrayus.ca/wp-content/uploads/2021/04/Arrayus_treatment_illustration_3_desktop.jpg' width='500'> 
     <h6 align='center'>Arrayus image-guided focused ultrasound platform</h6>
 </p>
 <br>
+
+
 
 # Dataset ℹ️
 Consist of 8K image-mask pairs manually segmented. <br>
@@ -50,6 +52,19 @@ Parent
 ```
 <br>
 
+There is a patient OOP class in both Seg2D and Seg3D. The Seg2D is more updated and has more features. Both files are called `patient.py` <br>
+The sorting of images and masks pairs are also done in `patient.py`
+
+## Data Augmentation
+Data Augmentation done in cv2, PIL and torchvision:
+- Random Rotation
+- Histogram Equalization
+- Random Horizontal flip (except for hips)
+- Random Colour Jitter
+- Normalization
+
+<br>
+
 # Library Dependencies 📚
 **To run any code please make a virtual environment first:**
 ```
@@ -73,7 +88,7 @@ $ deactivate
 ```
 <br>
 
-# 2D Slice by Slice Segmentation
+# 2D Slice by Slice Segmentation 🖼️
 Individual model per region: Spine, Bowel, Skin, Muscle, Left and Right Hip
 
 ## Training or Inferencing
@@ -125,14 +140,18 @@ More Investigation:
 <br>
 
 ## Example Output
-<img src="pictures/spine1.png" align='center'>
-<img src="pictures/spine2.png" align='center'>
-
+<p align='center'>
+<img src="pictures/spine1.png" width='500'>
+<img src="pictures/spine2.png" width='500'>
+<img src="pictures/kmean1.png" width='500'>
+<img src="pictures/kmeans2.png" width='500'>
+</p>
 
 <br> 
 
-# 3D Volumetric Segmentation 
-3D Volumetric Segmentation using [Vnet](https://arxiv.org/pdf/1606.04797.pdf) 
+# 3D Volumetric Segmentation 🧊
+3D Volumetric Segmentation using [Vnet](https://arxiv.org/pdf/1606.04797.pdf) <br>
+I have tested and debugged the model but haven't train anything yet
 
 <p align="center">
     <img src="https://miro.medium.com/v2/resize:fit:2000/1*rcT-PbkROWrSg0PRqO-KAA.png" width=400>
@@ -146,3 +165,5 @@ $ cd Seg3D
 $ python3 run.py
 ```
 You can tune the hyperparameters constants in the run.py file
+
+
