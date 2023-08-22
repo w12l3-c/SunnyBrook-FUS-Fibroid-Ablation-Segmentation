@@ -34,18 +34,36 @@ def auto_UNETPP(in_channels, num_classes):
         
     return model
 
-def prepare_transform():
+def prepare_transform(flip=0.3):
+    """
+    Prepare data augmentation transformations.
+
+    Args:
+        flip (float, optional): Probability of horizontal flip. Default is 0.3.
+
+    Returns:
+        torchvision.transforms.Compose: Data transformation pipeline.
+    """
     params = get_preprocessing_params('resnet50', pretrained='imagenet')
     transform = torchvision.transforms.Compose([
-        torchvision.transforms.RandomHorizontalFlip(0.3),
+        torchvision.transforms.RandomHorizontalFlip(flip),
         torchvision.transforms.ToTensor(),
     ])
     
     return transform
 
 def prepare_loss(option='BCE'):
+    """
+    Prepare the loss function.
+
+    Args:
+        option (str, optional): Loss function option ('BCE', 'CE', 'Dice_Binary', 'Dice_Multi'). Default is 'BCE'.
+
+    Returns:
+        torch.nn.Module: Loss function.
+    """
     if option == 'BCE':
-        criterion = nn.BCEWithLogitsLoss()
+        criterion = nn.BCEWithLogitsLoss()  
     if option == 'CE':
         criterion = nn.CrossEntropyLoss()
     if option == 'Dice_Binary':
@@ -55,11 +73,40 @@ def prepare_loss(option='BCE'):
         
     return criterion
 
-def prepare_optimizer(model, lr=1e-3):
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+def prepare_optimizer(model, lr=1e-3, option='Adam'):
+    """
+    Prepare the optimizer.
+
+    Args:
+        model (torch.nn.Module): Model for optimization.
+        lr (float, optional): Learning rate. Default is 1e-3.
+        option (str, optional): Optimizer option ('Adam', 'AdamW', 'SGD'). Default is 'Adam'.
+
+    Returns:
+        torch.optim.Optimizer: Optimizer.
+    """
+    if option == 'Adam':
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    if option == 'AdamW':
+        optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
+    if option == 'SGD':
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr)
     return optimizer
 
-def prepare_scheduler(optimizer, factor=0.1, patience=10, min_lr=1e-5, verbose=True):
+def prepare_scheduler(optimizer, factor=0.1, patience=10, min_lr=1e-6, verbose=True):
+    """
+    Prepare the learning rate scheduler.
+
+    Args:
+        optimizer (torch.optim.Optimizer): Optimizer for which to schedule learning rates.
+        factor (float, optional): Factor by which to reduce learning rate. Default is 0.1.
+        patience (int, optional): Number of epochs with no improvement before reducing learning rate. Default is 10.
+        min_lr (float, optional): Minimum learning rate. Default is 1e-6.
+        verbose (bool, optional): If True, print a message when learning rate is reduced. Default is True.
+
+    Returns:
+        torch.optim.lr_scheduler.ReduceLROnPlateau: Learning rate scheduler.
+    """
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=factor, patience=patience, min_lr=min_lr, verbose=verbose)
     return scheduler
 
