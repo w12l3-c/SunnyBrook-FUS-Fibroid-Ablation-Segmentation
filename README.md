@@ -37,7 +37,16 @@ Dataset
     | >  Bowel
     | >  etc.
 ```
-
+Also your dataset should be in the same directory as your code
+```
+Parent
+| > Code
+    | > Seg2D
+    ...
+| > Dataset
+    | > Binary
+    ...
+```
 <br>
 
 # Library Dependencies 📚
@@ -67,13 +76,23 @@ Individual model per region: Spine, Bowel, Skin, Muscle, Left and Right Hip
 
 ## Training or Inferencing
 The files that start with the region names are the ones you run. <br>
-etc. `spine.py`
+You can tune hyperparameters in those files, such as the epochs, batch_size, os stuff <br><br>
+Example: `spine.py`
 ```
 $ cd Seg2D
 $ python3 spine.py
 ```
 
-You can tune hyperparameters in those files, such as the epochs, batch_size, os stuff etc.
+
+When running the file, you can comment the training or inferencing block of code out using `Crtl + /` which looks like this
+```
+# ================== Training ===================
+                        or
+# ================== Inference ===================
+```
+
+Anything inside the `if __name__ == '__main__': ` is not being run if you import this file as a module to another file. For example the training and inference code won't be run on spine if you import `spine.py` in `skin.py` but the preparation of the spine dataset will be ran.
+
 
 <br>
 
@@ -82,7 +101,9 @@ For other hyperparmeters like learning rate, type of model, decay rate, optimize
 - If you want to change the hyperparmeters go to `model_run_fn.py` or `model_inference_fn.py`.
 
 
-## Models
+
+
+## Model Options
 - Unet
 - Unet++
 - DeepLabv3
@@ -97,6 +118,8 @@ Haven't debug:
 
 More Investigation:
 - SAM
+
+
 
 
 # 3D Volumetric Segmentation 
