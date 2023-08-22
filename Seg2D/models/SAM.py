@@ -20,8 +20,7 @@ import matplotlib.pyplot as plt
 import cv2
 
 # Download SAM from Github
-# pip install opencv-python matplotlib onnx onnxruntime
-# pip install 'git+https://github.com/facebookresearch/segment-anything.git'
+# pip3 install segment_anything
 
 from segment_anything import SegmentAnything, sam_model_registry, SamPredictor, SamGenerator
 from transformers import SamModel, SamProcessor
