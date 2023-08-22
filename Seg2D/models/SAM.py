@@ -1,3 +1,16 @@
+# ======================================================================
+# File Description:
+# ------------------
+# This file is to contain the functions of using the SAM model
+#
+# I tried it on collab, it would be optimal if there is a Object Detection model 
+# To automatically bound the object and segment it afterwards, 
+# or else it would be very hard to segment the object
+#
+# Which means, we need a bounding box dataset
+# ======================================================================
+
+# =================== Imports =================== #
 import torch
 import torchvision
 
@@ -13,7 +26,7 @@ import cv2
 from segment_anything import SegmentAnything, sam_model_registry, SamPredictor, SamGenerator
 from transformers import SamModel, SamProcessor
 
-# ---------------------- SAM ---------------------- #
+# ===================== SAM ===================== #
 sam_checkpoint = "sam_vit_h_4b8939.pth"
 model_type = "vit_h"
 
@@ -28,7 +41,7 @@ predictor = SamPredictor(model)
 
 
 
-# ---------------------- SAM Helper Functions ---------------------- #
+# ===================== SAM Helper Functions ===================== #
 def show_mask(mask, ax, random_color=False):
     if random_color:
         color = np.concatenate([np.random.random(3), np.array([0.6])], axis=0)
