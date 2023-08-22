@@ -10,8 +10,9 @@ Ultrasound will travel at different speed in the skin, fat, muscle, fibroid, and
     <img src='https://arrayus.ca/wp-content/uploads/2021/04/Arrayus_treatment_illustration_3_desktop.jpg'> 
     <h6 align='center'>Arrayus image-guided focused ultrasound platform</h6>
 </p>
+<br>
 
-## Dataset ℹ️
+# Dataset ℹ️
 Consist of 8K image-mask pairs manually segmented.
 
 Regions include:
@@ -37,7 +38,9 @@ Dataset
     | >  etc.
 ```
 
-## Library Dependencies 📚
+<br>
+
+# Library Dependencies 📚
 **To run any code please make a virtual environment first:**
 ```
 $ python3 -m venv DIR
@@ -59,12 +62,38 @@ To deactivate the virtural environment:
 $ deactivate
 ```
 
-## 2D Slice by Slice Segmentation
-Each model per region:
+# 2D Slice by Slice Segmentation
+Each model per region: Spine, Bowel, Skin, Muscle, Left and Right Hip
+
+The files that start with the region names are the ones you run. <br>
+etc. spine.py
+```
+$ cd Seg2D
+$ python3 spine.py
+```
+
+You can tune hyperparameters in those files, such as the epochs, batch_size, os stuff etc.
+
+For 
+
+## Models
+- Unet
+- Unet++
+- DeepLabv3
+- DeepLabv3+
+- KMeans
+
+Haven't debug:
+- Beit3
+- Segformer
+- FPN
+- MAnet
+
+More Investigation:
+- SAM
 
 
-
-## 3D Volumetric Segmentation 
+# 3D Volumetric Segmentation 
 3D Volumetric Segmentation using [Vnet](https://arxiv.org/pdf/1606.04797.pdf) 
 
 <p align="center">
