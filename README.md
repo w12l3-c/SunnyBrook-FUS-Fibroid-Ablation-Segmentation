@@ -63,10 +63,11 @@ $ deactivate
 ```
 
 # 2D Slice by Slice Segmentation
-Each model per region: Spine, Bowel, Skin, Muscle, Left and Right Hip
+Individual model per region: Spine, Bowel, Skin, Muscle, Left and Right Hip
 
+## Training or Inferencing
 The files that start with the region names are the ones you run. <br>
-etc. spine.py
+etc. `spine.py`
 ```
 $ cd Seg2D
 $ python3 spine.py
@@ -74,7 +75,12 @@ $ python3 spine.py
 
 You can tune hyperparameters in those files, such as the epochs, batch_size, os stuff etc.
 
-For 
+<br>
+
+For other hyperparmeters like learning rate, type of model, decay rate, optimizer, loss functions etc. 
+- If you want to add features into the model go to `models/` directory. 
+- If you want to change the hyperparmeters go to `model_run_fn.py` or `model_inference_fn.py`.
+
 
 ## Models
 - Unet
