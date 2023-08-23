@@ -40,7 +40,7 @@ Dataset
     | >  Bowel
     | >  etc.
 ```
-Also your dataset should be in the same directory as your code
+Also your dataset should be in the same directory as your code. Make sure to change some of the paths in the files as they are based on a computer
 ```
 Parent
 | > Code
