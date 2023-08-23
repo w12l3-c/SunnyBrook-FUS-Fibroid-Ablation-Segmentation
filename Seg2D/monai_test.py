@@ -1,3 +1,7 @@
+import monai
+from monai.data import CacheDataset, DataLoader, Dataset, decollate_batch
+from monai.networks.nets import vit, unetr
+from monai.metrics import DiceMetric, confusion_matrix
 from monai.utils import first, set_determinism
 from monai.transforms import (
     AsDiscrete,
@@ -16,11 +20,40 @@ from monai.transforms import (
     ScaleIntensityRanged,
     Spacingd,
     Invertd,
+    Activations,
+    RandCropByPosNegLabeld,
+    RandRotate90d,
+    ScaleIntensityd,
 )
-from monai.data import CacheDataset, DataLoader, Dataset, decollate_batch
-from monai.networks.nets import vit, unetr
+
+import torch
+from torch.utils.tensorboard import SummaryWriter
+from PIL import Image
+
+from spine import train_spine_dataset, val_spine_dataset, test_spine_dataset
 
 set_determinism(seed=0)
+
+# 
+train_transform = Compose(
+    [
+        LoadImaged(keys=["img", "seg"]),
+        EnsureChannelFirstd(keys=["img", "seg"]),
+        ScaleIntensityd(keys=["img", "seg"]),
+        RandCropByPosNegLabeld(
+            keys=["img", "seg"], label_key="seg", spatial_size=[96, 96], pos=1, neg=1, num_samples=4
+        ),
+        RandRotate90d(keys=["img", "seg"], prob=0.5, spatial_axes=[0, 1]),
+    ]  
+)
+
+val_transform = Compose(
+    [
+        LoadImaged(keys=["img", "seg"]),
+        EnsureChannelFirstd(keys=["img", "seg"]),
+        ScaleIntensityd(keys=["img", "seg"]),
+]
+)
 
 model_config = {
     "img_size": 224,          # Input image size
@@ -39,6 +72,7 @@ model_config = {
 }
 
 # Create the ViT model
-model = vit(**model_config)
+model = vit(model_config)
 
+print(model)
 
