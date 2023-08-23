@@ -151,7 +151,8 @@ More Investigation:
 
 # 3D Volumetric Segmentation 🧊
 3D Volumetric Segmentation using [Vnet](https://arxiv.org/pdf/1606.04797.pdf) <br>
-I have tested and debugged the model but haven't train anything yet
+I have tested and debugged the model but haven't train anything yet <br><br>
+**Dataset currently is catered towards 2D, we need empty images in the binary mask for the 3D volumes to be equal in size**
 
 <p align="center">
     <img src="https://miro.medium.com/v2/resize:fit:2000/1*rcT-PbkROWrSg0PRqO-KAA.png" width=400>
@@ -166,3 +167,20 @@ $ python3 run.py
 ```
 You can tune the hyperparameters constants in the run.py file
 
+# Demo
+## Gradio
+HuggingFace Demo of the models
+```
+$ cd Demo/SpineSeg
+$ python3 app.py
+```
+<p align="center">
+    <img src="pictures/gradio.png" width=500>
+</p>
+
+## Streamlit
+This is a website/GUI where you can upload your file and do inferencing, then you can download the inferenced masks.
+```
+$ cd Demo
+$ streamlit run streamlit_app.py
+```
