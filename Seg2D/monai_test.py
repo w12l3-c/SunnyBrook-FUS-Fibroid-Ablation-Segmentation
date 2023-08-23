@@ -43,6 +43,7 @@ import os
 import pydicom
 import numpy as np
 import cv2
+import datetime
 
 from spine import train_spine_dataset, val_spine_dataset, test_spine_dataset
 
@@ -126,8 +127,77 @@ loss_function = DiceCELoss(to_onehot_y=True, softmax=True)
 optimizer = torch.optim.AdamW(ViT.parameters(), 1e-4)
 dice_metric = DiceMetric(include_background=False, reduction="mean")
 
-print(ViT)
-print(UnetR)
+# The training functions are literally the same as the pytorch ones
+val_interval = 2
+best_metric = -1
+best_metric_epoch = -1
+epoch_loss_values = list()
+metric_values = list()
+writer = SummaryWriter(f'./runs/ViT_Multi_{datetime.datetime.now().strftime("%Y%m%d-%H%M%S")}')
+for epoch in range(10):
+    print("-" * 10)
+    print(f"epoch {epoch + 1}/{10}")
+    ViT.train()
+    epoch_loss = 0
+    step = 0
+    for batch_data in train_loader:
+        step += 1
+        inputs, labels = batch_data["img"].to(device), batch_data["seg"].to(device)
+        
+        outputs = model(inputs)
+        
+        loss = loss_function(outputs, labels)
+        epoch_loss += loss.item()
+        epoch_len = len(train_ds) // train_loader.batch_size
+        
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+        print(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}")
+        writer.add_scalar("train_loss", loss.item(), epoch_len * epoch + step)
+    
+    epoch_loss /= step
+    epoch_loss_values.append(epoch_loss)
+    print(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}")
 
+    # Usually the val_interval = 1 so you don't have to do this
+    if (epoch + 1) % val_interval == 0:
+        model.eval()
+        with torch.no_grad():
+            val_images = None
+            val_labels = None
+            val_outputs = None
+            for val_data in val_loader:
+                val_images, val_labels = val_data["img"].to(device), val_data["seg"].to(device)
+                roi_size = (96, 96)
+                sw_batch_size = 4
+                val_outputs = sliding_window_inference(val_images, roi_size, sw_batch_size, model)
+                val_outputs = [post_trans(i) for i in decollate_batch(val_outputs)]
+                # compute metric for current iteration
+                dice_metric(y_pred=val_outputs, y=val_labels)
+            # aggregate the final mean dice result
+            metric = dice_metric.aggregate().item()
+            # reset the status for next validation round
+            dice_metric.reset()
+            metric_values.append(metric)
+            if metric > best_metric:
+                best_metric = metric
+                best_metric_epoch = epoch + 1
+                torch.save(model.state_dict(), "best_metric_model_segmentation2d_dict.pth")
+                print("saved new best metric model")
+            print(
+                "current epoch: {} current mean dice: {:.4f} best mean dice: {:.4f} at epoch {}".format(
+                    epoch + 1, metric, best_metric, best_metric_epoch
+                )
+            )
+            writer.add_scalar("val_mean_dice", metric, epoch + 1)
+            # plot the last model output as GIF image in TensorBoard with the corresponding image and label
+            plot_2d_or_3d_image(val_images, epoch + 1, writer, index=0, tag="image")
+            plot_2d_or_3d_image(val_labels, epoch + 1, writer, index=0, tag="label")
+            plot_2d_or_3d_image(val_outputs, epoch + 1, writer, index=0, tag="output")
+
+print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
+writer.close()
 
 
