@@ -1,7 +1,16 @@
+# ===================================================================================================================
+# File description:
+# ------------------
+# Trying to use MONAI
+# ===================================================================================================================
+
+# ======================= Imports =======================
 import monai
 from monai.data import CacheDataset, DataLoader, Dataset, decollate_batch
-from monai.networks.nets import vit, unetr
+from monai.networks.nets import vit, unetr, UNETR
 from monai.metrics import DiceMetric, confusion_matrix
+from monai.losses import DiceCELoss 
+from monai.inferers import sliding_window_inference
 from monai.utils import first, set_determinism
 from monai.transforms import (
     AsDiscrete,
@@ -29,12 +38,17 @@ from monai.transforms import (
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from PIL import Image
+import os
 
 from spine import train_spine_dataset, val_spine_dataset, test_spine_dataset
 
+# ======================= Hyperparameters =======================
 set_determinism(seed=0)
+torch.manual_seed(42)
 
-# 
+NUM_WORKERS = os.cpu_count()
+
+# ======================= Transformation =======================
 train_transform = Compose(
     [
         LoadImaged(keys=["img", "seg"]),
@@ -71,8 +85,14 @@ model_config = {
     "mlp_dim": 2048,          # MLP dimension
 }
 
+train_ds = CacheDataset(data=train_spine_dataset, transform=train_transform, cache_rate=1.0, num_workers=12)
+train_loader = DataLoader(train_ds, batch_size=8, shuffle=True, num_workers=12)
+
+val_ds = CacheDataset(data=val_spine_dataset, transform=val_transform, cache_rate=1.0, num_workers=12)
+val_loader = DataLoader(val_ds, batch_size=8, shuffle=False, num_workers=12)
+
 # Create the ViT model
 model = vit(model_config)
 
-print(model)
+
 
