@@ -35,3 +35,26 @@ def load_model_torch(model, path):
     """
     model.load_state_dict(torch.load(path), strict=False)   # Load Model
     return model
+
+def accuracy_dice(pred, target):
+    """
+    Calculate Dice coefficient accuracy between predicted and target binary masks.
+
+    Args:
+        pred (torch.Tensor): Predicted binary mask.
+        target (torch.Tensor): Target binary mask.
+
+    Returns:
+        torch.Tensor: Dice coefficient accuracy score.
+    """
+    # Create mask for pred and targets
+    pred_mask = pred > 0.5
+    target_mask = target > 0.5
+
+    # Calculate intersection and union base on the mask AND & OR operation
+    intersection = torch.sum(pred_mask * target_mask)
+    total = torch.sum(pred_mask) + torch.sum(target_mask)
+
+    # Dice coefficient formula
+    dice = 2 * intersection / total
+    return dice
