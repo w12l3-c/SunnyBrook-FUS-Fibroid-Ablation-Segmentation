@@ -126,24 +126,25 @@ if dicom_folder:
         # Display
         col1, col2 = st.columns(2)
         
-        st.image(img, caption=f"{patient_slice.PatientName} - {slice}", use_column_width=True)
-        if region != "None":
-            st.image(pred_green, caption=f"Prediction", use_column_width=True)
-            if mask_folder is not None:
-                st.image(mask_red, caption=f"Ground Truth", use_column_width=True)
-                st.image(edge_overlay, caption=f"Edge Overlay", use_column_width=True)
-                st.text(f"Dice Accuracy: {acc_dice:.5f}")
-            
-            save_path = st.text_input("Save Path", value=f"{patient_slice.PatientName}_{slice}_pred")
-            with open(f"{save_path}.png", "wb") as f:
-                f.write(pred_green)
-            
-            with open(f"{save_path}.png", "rb") as f:
-                st.download_button(
-                    label="Download prediction",
-                    data=f,
-                    file_name=f"{save_path}.png"
-                )
+        with col1:
+            st.image(img, caption=f"{patient_slice.PatientName} - {slice}", use_column_width=True)
+            if region != "None":
+                st.image(pred_green, caption=f"Prediction", use_column_width=True)
+                if mask_folder is not None:
+                    st.image(mask_red, caption=f"Ground Truth", use_column_width=True)
+                    st.image(edge_overlay, caption=f"Edge Overlay", use_column_width=True)
+                    st.text(f"Dice Accuracy: {acc_dice:.5f}")
+                
+                save_path = st.text_input("Save Path", value=f"{patient_slice.PatientName}_{slice}_pred")
+                with open(f"{save_path}.png", "wb") as f:
+                    f.write(pred_green)
+                
+                with open(f"{save_path}.png", "rb") as f:
+                    st.download_button(
+                        label="Download prediction",
+                        data=f,
+                        file_name=f"{save_path}.png"
+                    )
                     
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
