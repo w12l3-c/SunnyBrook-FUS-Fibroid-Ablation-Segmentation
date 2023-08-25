@@ -12,7 +12,7 @@ import re
 
 # ====================== Main Roots ====================== #
 # Main Root for Masks
-mask_root = "/mnt/HDD_1TB/Wallace/Segmentation_Raw_2D/"
+mask_root = "../../Segmentation_Raw_2D" 
 # Sub-Directories of Main
 subdir1 = sorted(os.listdir(mask_root))
 
