@@ -2,6 +2,8 @@
 # File description:
 # ------------------
 # Trying to use MONAI
+# MONAI is applicable for both 2D and 3D segmentation
+# https://github.com/Project-MONAI/MONAI
 # ===================================================================================================================
 
 # ======================= Imports =======================
@@ -62,7 +64,6 @@ def load_dicom_as_numpy(dicom_path):
 
 dicom_loader = LoadImaged(keys=["img"], reader=lambda x: load_dicom_as_numpy(x))
 png_loader = LoadImaged(keys=["seg"], reader=lambda x: np.asarray(Image.open(x)))
-
 
 train_transform = Compose(
     [
