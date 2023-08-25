@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # =================== Training =================== #
     try:
         # Set the tensorboard and save path
-        unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        unet_save_path = f"./trained_models/Unet_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         unet_writer_path = f"runs/Unet_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
         unet_run(train_skin_dataset, val_skin_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_save_path, unet_writer_path, 'BCE')
     except Exception as e:
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     
     # =================== Inference =================== #
     try:
-        unet_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_2023-08-03_14.pth"
+        unet_path = "./trained_models/Unet_Skin_2023-08-03_14.pth"
         # display=True to show individual images and results, display=False to show the overall stats of entire dataset
         unet_inference(test_skin_dataset, unet_path, device, display=False)
     except Exception as e:
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     try:
         # Set the tensorboard and save path
         deeplabv3p_writer = f"runs/DeepLabV3P_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        deeplabv3p_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        deeplabv3p_save_path = f"./trained_models/DeepLabV3P_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         deeplabv3p_run(train_skin_dataset, val_skin_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, deeplabv3p_writer, deeplabv3p_save_path, 'BCE')
     except Exception as e:
         print(e)
@@ -128,7 +128,7 @@ def deeplabv3_run():
     print('Training Completed')
     
     # Save the model
-    save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
+    save_path = f"./trained_models/DeepLabV3_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
     save_model_torch(best, save_path)
     print(f"Model saved at {save_path}")
 
@@ -139,7 +139,7 @@ def deeplabv3_inference():
     
     # Load model
     model, transform, loss_fn, optimizer, scheduler = DeepLabV3.DeepLabV3(in_channels=3, num_classes=1, size='regular')
-    model = load_model_torch(model, "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3_2021-09-22_16:11:39.pth")
+    model = load_model_torch(model, "./trained_models/DeepLabV3_2021-09-22_16:11:39.pth")
     
     # Inference
     model.eval()
@@ -209,7 +209,7 @@ def unet_run():
     print('Training Completed')
     
     # Save the model
-    save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
+    save_path = f"./trained_models/Unet_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
     save_model_torch(best, save_path)
     print(f"Model saved at {save_path}")
     
@@ -218,7 +218,7 @@ def unet_run():
 #     # Set Seed
 #     torch.manual_seed(42)
     
-#     saved_model = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Skin_2023-08-03_14:03:42.pth"
+#     saved_model = "./trained_models/Unet_Skin_2023-08-03_14:03:42.pth"
 #     model = Unet.auto_UNET(in_channels=3, num_classes=2)
 #     model = load_model_torch(model, saved_model)
 #     model = model.to(device)
@@ -262,7 +262,7 @@ def unetpp_run():
     print('Training Completed')
     
     # Save the model
-    save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unetpp_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+    save_path = f"./trained_models/Unetpp_Skin_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
     save_model_torch(best, save_path)
     print(f"Model saved at {save_path}")
     
@@ -271,7 +271,7 @@ def unetpp_inference():
     # Set Seed
     torch.manual_seed(42)
     
-    saved_model = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unetpp_Skin_2023-08-03_22.pth"
+    saved_model = "./trained_models/Unetpp_Skin_2023-08-03_22.pth"
     model = Unetpp.auto_UNETPP(in_channels=3, num_classes=2)
     model = load_model_torch(model, saved_model)
     model = model.to(device)
