@@ -23,10 +23,34 @@ import time
 from SpineSeg.model import create_Unet, load_model_torch, accuracy_dice
 
 # ======================= Streamlit =======================
+
+custom_css = """
+<style>
+.stApp > header {
+    background-color: transparent;
+}
+
+.stApp {
+    margin: auto;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: auto;
+    background: linear-gradient(315deg, #4f2991 3%, #7dc4ff 38%, #36cfcc 68%, #a92ed3 98%);
+    animation: gradient 15s ease infinite;
+    background-size: 400% 400%;
+    background-attachment: fixed;
+}
+</style>
+"""
+
+st.write(custom_css, unsafe_allow_html=True)
+
 st.title("Regional MRI Segmentation for MRgFUS")
 
-dicom_folder = st.file_uploader("Upload a DICOM Folder", type=["dir", "dcm"], accept_multiple_files=True)
+dicom_folder = st.file_uploader("Upload a DICOM Folder", type=["dir", "dcm", 'png'], accept_multiple_files=True)
 dicom_folder.sort(key=lambda x: x.name)
+if len(dicom_folder) > 0:
+    st.success(f"Dicom Folder Loaded")
+st.write("--------------------------------------------------")
 
 region = st.selectbox("Select a Model", ["None", "Spine", "Skin", 'Muscle', 'Bowel', 'HipL', 'HipR'])
 device = st.selectbox("Select a Device", ["CPU", "GPU"])
@@ -39,6 +63,7 @@ if region != "None":
     else:
         device = 'cpu'
     model.eval()
+    st.success(f"Model Loaded")
     st.write("--------------------------------------------------")
     
 mask_button = st.checkbox("Mask Avaliable?")
@@ -49,13 +74,14 @@ if mask_button:
         mask_folder.sort(key=lambda x: x.name)
     except Exception as e:
         st.error("Error reading mask folder: " + str(e))
+    st.success(f"Mask Folder Loaded")
     st.write("--------------------------------------------------")
     
 st.write("--------------------------------------------------")
     
 if dicom_folder:
-    slice = st.slider("DICOM File Slice", 0, len(dicom_folder)-1, 50)
-
+    slice = st.slider("DICOM File Slice", 0, len(dicom_folder)-1, len(dicom_folder)//2)
+    
     try:
         patient_slice = dicom_folder[slice]
         patient_slice = pydicom.dcmread(patient_slice)
@@ -73,9 +99,9 @@ if dicom_folder:
                 transformed_img = transform(resized_img)
                 transformed_img = transformed_img.unsqueeze(0)
                 
-                if device == "GPU":
+                if device == "cuda":
                     transformed_img = transformed_img.to(device)
-                    
+                
                 start_time = time.time()
                 pred = model(transformed_img)
                 inference_time = time.time() - start_time
@@ -129,7 +155,6 @@ if dicom_folder:
         with col1:
             st.image(img, caption=f"{patient_slice.PatientName} - {slice}", use_column_width=True)
             if region != "None":
-                st.image(pred_green, caption=f"Prediction", use_column_width=True)
                 if mask_folder is not None:
                     st.image(mask_red, caption=f"Ground Truth", use_column_width=True)
 
@@ -140,17 +165,19 @@ if dicom_folder:
                     st.image(edge_overlay, caption=f"Edge Overlay", use_column_width=True)
                     st.text(f"Dice Accuracy: {acc_dice:.5f}")
                     
-        if region != None:
+        if region != 'None':
             save_path = st.text_input("Save Path", value=f"{patient_slice.PatientName}_{slice}_pred")
-            with open(f"{save_path}.png", "wb") as f:
-                f.write(pred_green)
-            
-            with open(f"{save_path}.png", "rb") as f:
-                st.download_button(
-                    label="Download prediction",
-                    data=f,
-                    file_name=f"{save_path}.png"
-                )
+            save_button = st.button("Save Prediction")
+            if save_button:
+                with open(f"predictions/{save_path}.png", "wb") as f:
+                    f.write(pred_green)
+                
+                with open(f"predictions/{save_path}.png", "rb") as f:
+                    st.download_button(
+                        label="Download prediction",
+                        data=f,
+                        file_name=f"{save_path}.png"
+                    )
                     
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
