@@ -40,7 +40,7 @@ PIN_MEMORY = True   # Pin memory for faster GPU transfer
 NUM_EPOCHS = 200 # Just fot test, in pratical should be 100 or more
 BATCH_SIZE = 4  # Between 8-16 is good: 4 for Deeplabv3 & Unet++, 8 for Unet
 IN_CHANNELS = 3 # RGB
-NUM_CLASSES = 1 # Classes to Segment
+NUM_CLASSES = 2 # Classes to Segment
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 # =================== Patient Dataset =================== #
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     try:
         # Set the tensorboard and save path
         deeplabv3_writer = f"runs/DeepLabV3_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        deeplabv3_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        deeplabv3_save_path = f"./trained_models/DeepLabV3_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         deeplabv3_run(train_spine_dataset, val_spine_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, deeplabv3_writer, deeplabv3_save_path, 'BCE')
     except Exception as e:
         print(e)
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     try:
         # Set the tensorboard and save path
         unet_writer = f"runs/Unet_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        unet_save_path = f"./trained_models/Unet_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         unet_run(train_spine_dataset, val_spine_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
     except Exception as e:
         print(e)
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     # =================== Inference =================== #
     try:
         # Set the path where you save your model
-        unet_save_path = '/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Spine_2023-08-01_18:02:56.pth'
+        unet_save_path = './trained_models/Unet_Spine_2023-08-01_18:02:56.pth'
         # display=True to show individual images and results, display=False to show the overall stats of entire dataset
         unet_inference(test_spine_dataset, unet_save_path, device, display=True)
     except Exception as e:
@@ -102,9 +102,9 @@ if __name__ == "__main__":
     # =================== Training & Inference =================== #
     try:
         # deeplabv3plus_writer = f"runs/DeepLabV3P_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        # deeplabv3plus_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        # deeplabv3plus_save_path = f"./trained_models/DeepLabV3P_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         # deeplabv3p_run(train_spine_dataset, val_spine_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, deeplabv3plus_writer, deeplabv3plus_save_path, 'BCE')
-        deeplabv3plus_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Spine_2023-08-05_04.pth"
+        deeplabv3plus_save_path = "./trained_models/DeepLabV3P_Spine_2023-08-05_04.pth"
         deeplabv3plus_inference(test_spine_dataset, deeplabv3plus_save_path, device)
     except Exception as e:
         print(e)
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 #     print('Training Completed')
     
 #     # Save the model
-#     save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
+#     save_path = f"./trained_models/DeepLabV3_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
 #     save_model_torch(best, save_path)
 #     print(f"Model saved at {save_path}")
 
@@ -170,7 +170,7 @@ if __name__ == "__main__":
     
 #     # Load model
 #     model, transform, loss_fn, optimizer, scheduler = DeepLabV3.DeepLabV3(in_channels=3, num_classes=1, size='regular')
-#     model = load_model_torch(model, "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3_2021-09-22_16:11:39.pth")
+#     model = load_model_torch(model, "./trained_models/DeepLabV3_2021-09-22_16:11:39.pth")
     
 #     # Inference
 #     model.eval()
@@ -240,7 +240,7 @@ if __name__ == "__main__":
 #     print('Training Completed')
     
 #     # Save the model
-#     save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
+#     save_path = f"./trained_models/Unet_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.pth"
 #     save_model_torch(best, save_path)
 #     print(f"Model saved at {save_path}")
     
@@ -249,7 +249,7 @@ if __name__ == "__main__":
 # #     # Set Seed
 # #     torch.manual_seed(42)
     
-# #     saved_model = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Spine_2023-08-01_18:02:56.pth"
+# #     saved_model = "./trained_models/Unet_Spine_2023-08-01_18:02:56.pth"
 # #     model = Unet.auto_UNET(in_channels=3, num_classes=2)
 # #     model = load_model_torch(model, saved_model)
 # #     model = model.to(device)
@@ -293,7 +293,7 @@ if __name__ == "__main__":
 #     print('Training Completed')
     
 #     # Save the model
-#     save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unetpp_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+#     save_path = f"./trained_models/Unetpp_Spine_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
 #     save_model_torch(best, save_path)
 #     print(f"Model saved at {save_path}")
     
@@ -302,7 +302,7 @@ if __name__ == "__main__":
 #     # Set Seed
 #     torch.manual_seed(42)
     
-#     saved_model = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unetpp_Spine_2023-08-02_18.pth"
+#     saved_model = "./trained_models/Unetpp_Spine_2023-08-02_18.pth"
 #     model = Unetpp.auto_UNETPP(in_channels=3, num_classes=2)
 #     model = load_model_torch(model, saved_model)
 #     model = model.to(device)
