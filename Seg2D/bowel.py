@@ -73,9 +73,9 @@ if __name__ == "__main__":
     try:
         # Set the tensorboard and save path
         unet_writer = f"runs/Unet_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        unet_save_path = f"./trained_models/Unet_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         unet_run(train_bowel_dataset, val_bowel_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
-        # unet_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Bowel_2023-08-05_08.pth"
+        # unet_save_path = "./trained_models/Unet_Bowel_2023-08-05_08.pth"
         #   # display=True to show individual images and results, display=False to show the overall stats of entire dataset
         # unet_inference(test_bowel_dataset, unet_save_path, device)
     except Exception as e:
@@ -86,9 +86,9 @@ if __name__ == "__main__":
     try:
         #   # Set the tensorboard and save path
         # unetpp_writer = f"runs/UnetPP_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        # unetpp_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/UnetPP_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        # unetpp_save_path = f"./trained_models/UnetPP_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         # unetpp_run(train_bowel_dataset, val_bowel_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unetpp_writer, unetpp_save_path, 'BCE')
-        unetpp_save_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/UnetPP_Muscle_2023-08-04_16.pth"
+        unetpp_save_path = "./trained_models/UnetPP_Muscle_2023-08-04_16.pth"
         # display=True to show individual images and results, display=False to show the overall stats of entire dataset
         unetpp_inference(test_bowel_dataset, unetpp_save_path, device)
     except Exception as e:
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     try:
         # Set the tensorboard and save path
         deeplabv3p_writer = f"runs/DeepLabV3P_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-        deeplabv3p_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/DeepLabV3P_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+        deeplabv3p_save_path = f"./trained_models/DeepLabV3P_Bowel_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
         deeplabv3p_run(train_bowel_dataset, val_bowel_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, deeplabv3p_writer, deeplabv3p_save_path, 'BCE')
     except Exception as e:
         print(e)
