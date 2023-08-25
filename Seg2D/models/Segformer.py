@@ -30,7 +30,7 @@ COLOR_DICT = {'Background':(256, 256, 256), 'Spine': (35, 132, 250), 'Bowel': (1
 COLOR_LIST = [v for v in COLOR_DICT.values()]   # Colour map in list
 id2label = {i: k for i, (k, v) in enumerate(COLOR_DICT.items())}
 label2id = {k: i for i, (k, v) in enumerate(COLOR_DICT.items())}
-
+        
 # ================== Pretrained Segformer ================== #
 class Segformer():
     def __init__(self, path, id2label, label2id):
