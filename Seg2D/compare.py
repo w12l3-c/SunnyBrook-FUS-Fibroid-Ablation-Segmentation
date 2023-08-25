@@ -29,7 +29,7 @@ from hipr import test_hipr_dataset
 from bowel import test_bowel_dataset
 
 # =================== Sagittal Compare =================== #
-sagittal_model_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Spine_2023-08-01_18:02:56.pth"
+sagittal_model_path = "./trained_models/Unet_Spine_2023-08-01_18:02:56.pth"
 
 sag_model = Unet.auto_UNET(in_channels=3, num_classes=2)  # Create an instance of the Unet model
 sag_model = load_model_torch(sag_model, sagittal_model_path)  # Load pre-trained model weights
@@ -103,7 +103,7 @@ def sag_compare_unsuper_super(dataset):
         plt.show()
 
 # =================== Coronal Compare =================== #
-coronal_model_path = "/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_HipL_2023-08-10_16.pth"
+coronal_model_path = "./trained_models/Unet_HipL_2023-08-10_16.pth"
 
 cor_model = Unet.auto_UNET(in_channels=3, num_classes=2)  # Create an instance of the Unet model
 cor_model = load_model_torch(cor_model, coronal_model_path)  # Load pre-trained model weights
