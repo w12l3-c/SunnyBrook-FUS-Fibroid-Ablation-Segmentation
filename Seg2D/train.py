@@ -608,7 +608,7 @@ def beit3_train_model(model, dataset_dict, epochs, batch_size, compute_metrics, 
     """
     # Define training arguments for model training
     training_args = TrainingArguments(
-        output_dir="/mnt/HDD_1TB/Wallace/Code/Seg2D/predictions",  # Directory to save model training outputs
+        output_dir="./predictions",  # Directory to save model training outputs
         num_train_epochs=epochs,                # Number of training epochs
         per_device_train_batch_size=batch_size, # Batch size for training data
         per_device_eval_batch_size=batch_size,  # Batch size for evaluation data
