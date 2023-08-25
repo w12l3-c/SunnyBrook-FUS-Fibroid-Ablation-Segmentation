@@ -28,6 +28,18 @@ import torchvision.transforms as transforms
 
 # ================== Pretrained Beit3 ================== #
 class Beit3():
+    """
+    Wrapper class for the pretrained BEIT3 model for semantic segmentation.
+
+    Args:
+        id2label (dict): A dictionary mapping class IDs to labels.
+        label2id (dict): A dictionary mapping labels to class IDs.
+
+    Attributes:
+        image_processor: Pretrained image processor.
+        feature_extractor: Pretrained feature extractor.
+        model: Pretrained BEIT3 model for semantic segmentation.
+    """
     def __init__(self, id2label, label2id):
         self.image_processor = AutoImageProcessor.from_pretrained("microsoft/beit-base-finetuned-ade-640-640")
         self.feature_extractor = BeitFeatureExtractor.from_pretrained("microsoft/beit-base-finetuned-ade-640-640")
@@ -37,6 +49,15 @@ class Beit3():
 # ====================== Dataset ====================== #            
 # HuggingFace have a specific dataset structure
 def dataset2dict(dataset):
+    """
+    Convert a dataset into a dictionary containing images and masks.
+
+    Args:
+        dataset: The dataset to convert.
+
+    Returns:
+        dict: A dictionary containing 'image' and 'mask' keys with corresponding data.
+    """
     data_dict = {}
     image_array = []
     mask_array = []
@@ -49,6 +70,17 @@ def dataset2dict(dataset):
         
 # Convert your dataset into a DatasetDict
 def create_huggingface_dataset(train_dataset, val_dataset, test_dataset):
+    """
+    Create a HuggingFace DatasetDict from train, validation, and test datasets.
+
+    Args:
+        train_dataset: The training dataset.
+        val_dataset: The validation dataset.
+        test_dataset: The test dataset.
+
+    Returns:
+        DatasetDict: A DatasetDict containing train, validation, and test datasets.
+    """
     train_dict = dataset2dict(train_dataset)
     val_dict = dataset2dict(val_dataset)
     test_dict = dataset2dict(test_dataset)
@@ -66,10 +98,30 @@ def create_huggingface_dataset(train_dataset, val_dataset, test_dataset):
     return dataset_dict
 
 def train_transforms(beit, image):
+    """
+    Apply transformations to an image for training with BEIT.
+
+    Args:
+        beit: The BEIT3 model.
+        image: The input image.
+
+    Returns:
+        image: The transformed image.
+    """
     image = beit.image_processor(image)
     return image
 
 def val_transforms(beit, image):
+    """
+    Apply transformations to an image for validation with BEIT.
+
+    Args:
+        beit: The BEIT3 model.
+        image: The input image.
+
+    Returns:
+        image: The transformed image.
+    """
     image = beit.image_processor(image)
     return image
 
@@ -78,12 +130,30 @@ def val_transforms(beit, image):
 metric = evaluate.load("mean_iou")
 
 def compute_metrics(eval_preds):
-  metric = evaluate.load("glue", "mrpc")
-  logits, labels = eval_preds
-  predictions = np.argmax(logits, axis=-1)
-  return metric.compute(predictions=predictions, references=labels)
+    """
+    Compute metrics for semantic segmentation.
+
+    Args:
+        eval_preds: Tuple containing logits and labels.
+
+    Returns:
+        dict: A dictionary of computed metrics.
+    """
+    metric = evaluate.load("glue", "mrpc")
+    logits, labels = eval_preds
+    predictions = np.argmax(logits, axis=-1)
+    return metric.compute(predictions=predictions, references=labels)
 
 def compute_metrics(pred):
+    """
+    Compute metrics for semantic segmentation.
+
+    Args:
+        eval_preds: Tuple containing logits and labels.
+
+    Returns:
+        dict: A dictionary of computed metrics.
+    """
     with torch.no_grad():
         logits, labels = pred
         logits_tensor = torch.from_numpy(logits)
@@ -105,8 +175,17 @@ def compute_metrics(pred):
         
         return metrics
 
-
 def accuracy_iou(pred, target):
+    """
+    Calculate the Intersection over Union (IoU) accuracy.
+
+    Args:
+        pred: The predicted segmentation.
+        target: The ground truth segmentation.
+
+    Returns:
+        float: The mean IoU accuracy.
+    """
     num_labels = target.unique().numel()
     ious = []
     
@@ -123,6 +202,16 @@ def accuracy_iou(pred, target):
     return mean_iou
 
 def accuracy_intersect(pred, target):
+    """
+    Calculate the Intersection accuracy.
+
+    Args:
+        pred: The predicted segmentation.
+        target: The ground truth segmentation.
+
+    Returns:
+        float: The mean Intersection accuracy.
+    """
     num_labels = target.unique().numel()
     intersects = []
     
@@ -138,6 +227,16 @@ def accuracy_intersect(pred, target):
     return mean_intersect
 
 def accuracy_dice(pred, target):
+    """
+    Calculate the Dice coefficient accuracy.
+
+    Args:
+        pred: The predicted segmentation.
+        target: The ground truth segmentation.
+
+    Returns:
+        float: The mean Dice coefficient accuracy.
+    """
     num_labels = target.unique().numel()
     dices = []
     
@@ -153,6 +252,16 @@ def accuracy_dice(pred, target):
     return mean_dice
 
 def accuracy_basic(pred, target):
+    """
+    Calculate the basic pixel-wise accuracy.
+
+    Args:
+        pred: The predicted segmentation.
+        target: The ground truth segmentation.
+
+    Returns:
+        float: The pixel-wise accuracy.
+    """
     correct = torch.sum(pred == target)
     return correct / pred.numel()
 
