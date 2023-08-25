@@ -23,7 +23,7 @@ import time
 from SpineSeg.model import create_Unet, load_model_torch, accuracy_dice
 
 # ======================= Streamlit =======================
-
+# Css
 custom_css = """
 <style>
 .stApp > header {
@@ -39,6 +39,27 @@ custom_css = """
     background-size: 400% 400%;
     background-attachment: fixed;
 }
+
+.st-eh {
+    background-color: rgba(22, 232, 89, 0.64);
+}
+
+hr {
+  margin: 2em 0px;
+  padding: 0px;
+  color: inherit;
+  background-color: transparent;
+  border-color: currentcolor currentcolor rgba(250, 250, 250, 0.6);
+  border-style: none none solid;
+  border-width: medium medium 4px;
+  border-image: none 100% / 1 / 0 stretch;
+}
+
+.css-q8sbsg p {
+  word-break: break-word;
+  margin-bottom: 0px;
+  font-size: 16px;
+}
 </style>
 """
 
@@ -46,6 +67,7 @@ st.write(custom_css, unsafe_allow_html=True)
 
 st.title("Regional MRI Segmentation for MRgFUS")
 
+# Get DICOM folder
 dicom_folder = st.file_uploader("Upload a DICOM Folder", type=["dir", "dcm", 'png'], accept_multiple_files=True)
 dicom_folder.sort(key=lambda x: x.name)
 if len(dicom_folder) > 0:
@@ -72,10 +94,11 @@ if mask_button:
     try:
         mask_folder = st.file_uploader("Upload a Mask Folder", type=["dir", "png"], accept_multiple_files=True)
         mask_folder.sort(key=lambda x: x.name)
+        if len(mask_folder) > 0:
+            st.success(f"Mask Folder Loaded")
     except Exception as e:
         st.error("Error reading mask folder: " + str(e))
-    st.success(f"Mask Folder Loaded")
-    st.write("--------------------------------------------------")
+    
     
 st.write("--------------------------------------------------")
     
@@ -83,13 +106,22 @@ if dicom_folder:
     slice = st.slider("DICOM File Slice", 0, len(dicom_folder)-1, len(dicom_folder)//2)
     
     try:
-        patient_slice = dicom_folder[slice]
-        patient_slice = pydicom.dcmread(patient_slice)
-        
-        img = patient_slice.pixel_array
-        img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX)
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-        img = img.astype(np.uint8)
+        if dicom_folder[slice].name.endswith(".dcm"):
+            patient_slice = dicom_folder[slice]
+            patient_slice = pydicom.dcmread(patient_slice)
+            
+            name = patient_slice.PatientName
+            
+            img = patient_slice.pixel_array
+            img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX)
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+            img = img.astype(np.uint8)
+        elif dicom_folder[slice].name.endswith(".png"):
+            name =  'External Images'
+            
+            img = Image.open(dicom_folder[slice])
+            img = img.convert('RGB')
+            img = np.asarray(img)    
         
         # Inference
         if region != "None":
@@ -153,7 +185,7 @@ if dicom_folder:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.image(img, caption=f"{patient_slice.PatientName} - {slice}", use_column_width=True)
+            st.image(img, caption=f"{name} - {slice}", use_column_width=True)
             if region != "None":
                 if mask_folder is not None:
                     st.image(mask_red, caption=f"Ground Truth", use_column_width=True)
@@ -166,7 +198,7 @@ if dicom_folder:
                     st.text(f"Dice Accuracy: {acc_dice:.5f}")
                     
         if region != 'None':
-            save_path = st.text_input("Save Path", value=f"{patient_slice.PatientName}_{slice}_pred")
+            save_path = st.text_input("Save Path", value=f"{name}_{slice}_pred")
             save_button = st.button("Save Prediction")
             if save_button:
                 with open(f"predictions/{save_path}.png", "wb") as f:
