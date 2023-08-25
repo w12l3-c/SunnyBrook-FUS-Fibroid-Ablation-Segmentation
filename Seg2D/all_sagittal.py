@@ -81,7 +81,7 @@ if __name__ == '__main__':
     # try:
     #     # Set the writer and save path
     #     unet_writer = f"runs/Unet_Sagittal_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}"
-    #     unet_save_path = f"/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Sagittal_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
+    #     unet_save_path = f"./trained_models/Unet_Sagittal_{datetime.datetime.now().strftime('%Y-%m-%d_%H')}.pth"
     #     unet_run(train_sag_dataset, val_sag_dataset, device, NUM_EPOCHS, NUM_CLASSES, BATCH_SIZE, NUM_WORKERS, True, unet_writer, unet_save_path, 'BCE')
     # except Exception as e:
     #     print(e)
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     # =================== Inference =================== #
     # try:
     #     # Set the path where you save your model
-    #     unet_save_path = '/mnt/HDD_1TB/Wallace/Code/Seg2D/trained_models/Unet_Sagittal_2023-08-01_18:02:56.pth'
+    #     unet_save_path = './trained_models/Unet_Sagittal_2023-08-01_18:02:56.pth'
     #     unet_inference(test_sag_dataset, unet_save_path, device, num_classes=NUM_CLASSES, display=True)
     # except Exception as e:
     #     print(e)
