@@ -148,6 +148,7 @@ More Investigation:
 </p>
 
 <br> 
+<br>
 
 # 3D Volumetric Segmentation 🧊
 3D Volumetric Segmentation using [Vnet](https://arxiv.org/pdf/1606.04797.pdf) <br>
@@ -167,6 +168,9 @@ $ python3 run.py
 ```
 You can tune the hyperparameters constants in the run.py file
 
+<br>
+<br>
+
 # Demo
 ## Gradio
 HuggingFace Demo of the models
@@ -184,3 +188,6 @@ This is a website/GUI where you can upload your file and do inferencing, then yo
 $ cd Demo
 $ streamlit run streamlit_app.py
 ```
+<p align="center">
+    <img src="pictures/streamlit1.png" width=500>
+</p>
